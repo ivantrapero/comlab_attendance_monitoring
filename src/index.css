@@ -62,6 +62,7 @@ html {
 
 .login-page {
   min-height: 100vh;
+  overflow: hidden;
 
   display: flex;
   align-items: center;
@@ -331,7 +332,7 @@ html {
   display: flex;
   align-items: center;
 
-  padding: 60px;
+  padding: 40px;
 
   background: #111111;
 }
@@ -657,6 +658,32 @@ html {
   color: #3f3f3f;
 
   font-size: 10px;
+}
+
+.login-theme-control {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.login-theme-button {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #f59e0b;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.login-theme-button:hover {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.4);
+  transform: translateY(-1px);
 }
 
 

@@ -7,6 +7,8 @@ import {
   Monitor,
   ShieldCheck,
   AlertCircle,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 import { loginUser } from "./firebaseAuth";
@@ -19,6 +21,17 @@ function App() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(
+    () => document.documentElement.dataset.theme === "light",
+  );
+
+  const toggleTheme = () => {
+    const nextTheme = isLightMode ? "dark" : "light";
+
+    document.documentElement.dataset.theme = nextTheme;
+    localStorage.setItem("comlab-theme", nextTheme);
+    setIsLightMode(nextTheme === "light");
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -226,6 +239,18 @@ function App() {
                 This system is intended for authorized
                 Computer Laboratory personnel.
               </p>
+            </div>
+
+            <div className="login-theme-control">
+              <button
+                type="button"
+                className="login-theme-button"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${isLightMode ? "dark" : "light"} mode`}
+                title={`Switch to ${isLightMode ? "dark" : "light"} mode`}
+              >
+                {isLightMode ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
             </div>
 
             <footer>
