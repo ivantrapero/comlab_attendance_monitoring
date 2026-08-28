@@ -116,10 +116,6 @@ function App() {
             </div>
 
             <div className="login-header">
-              <span className="portal-label">
-                STAFF PORTAL
-              </span>
-
               <h2>Welcome back</h2>
 
               <p>
