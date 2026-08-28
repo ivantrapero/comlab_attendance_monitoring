@@ -1,0 +1,9 @@
+.app-shell {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    min-width: 0;
+  }
+}
