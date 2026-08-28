@@ -89,6 +89,31 @@
   padding-top: 4px;
 }
 
+.app-sidebar .sidebar-collapse-button {
+  width: 100%;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #bdbdbd;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.app-sidebar .sidebar-collapse-button:hover {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+}
+
 .app-sidebar .nav-title {
   padding: 0 12px;
 
@@ -96,7 +121,7 @@
 
   color: #6b6b6b;
 
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
 
   letter-spacing: 0.16em;
@@ -130,8 +155,8 @@
   text-align: left;
 
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
 
   cursor: pointer;
 
@@ -216,7 +241,7 @@
 
   color: #111111;
 
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -236,7 +261,7 @@
 
   color: #b0b0b0;
 
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -263,8 +288,8 @@
   color: #d9d9d9;
 
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
 
   cursor: pointer;
 
@@ -273,6 +298,45 @@
     border-color 0.2s ease,
     color 0.2s ease,
     transform 0.2s ease;
+}
+
+.app-sidebar .theme-toggle-button {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  margin: 0 0 12px auto;
+
+  border: 1px solid rgba(245, 158, 11, 0.12);
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.02);
+
+  color: #d9d9d9;
+
+  font-family: inherit;
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.app-sidebar .theme-toggle-button:hover {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+  transform: translateY(-1px);
+}
+
+.app-sidebar .theme-toggle-button svg {
+  flex-shrink: 0;
 }
 
 .app-sidebar .logout-button:hover {
@@ -301,4 +365,39 @@
   .app-sidebar.sidebar-open {
     transform: translateX(0);
   }
+}
+
+.app-sidebar.sidebar-collapsed {
+  width: 82px;
+  padding-right: 12px;
+  padding-left: 12px;
+}
+
+.app-sidebar.sidebar-collapsed .sidebar-collapse-button,
+.app-sidebar.sidebar-collapsed .theme-toggle-button,
+.app-sidebar.sidebar-collapsed .logout-button {
+  width: 42px;
+  padding: 0;
+  justify-content: center;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.app-sidebar.sidebar-collapsed .sidebar-collapse-button span,
+.app-sidebar.sidebar-collapsed .nav-title,
+.app-sidebar.sidebar-collapsed .nav-item span,
+.app-sidebar.sidebar-collapsed .sidebar-user > div:last-child,
+.app-sidebar.sidebar-collapsed .theme-toggle-button span,
+.app-sidebar.sidebar-collapsed .logout-button span {
+  display: none;
+}
+
+.app-sidebar.sidebar-collapsed .nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+.app-sidebar.sidebar-collapsed .sidebar-user {
+  justify-content: center;
+  padding: 10px 0;
 }

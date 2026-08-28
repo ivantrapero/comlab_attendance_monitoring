@@ -394,6 +394,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
               <p>
                 Here's the attendance overview
                 for the Computer Laboratory on
+                {" "}
                 {today}.
               </p>
 

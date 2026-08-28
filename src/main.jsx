@@ -12,6 +12,15 @@ import { listenToAuth, logoutUser } from "./firebaseAuth";
 
 import "./index.css";
 
+const storedTheme = localStorage.getItem("comlab-theme");
+const initialTheme =
+  storedTheme ||
+  (window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "light"
+    : "dark");
+
+document.documentElement.dataset.theme = initialTheme;
+
 function Main() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +65,13 @@ function Main() {
 
   const handleNavigate = (newPage) => {
     setPage(newPage);
+  };
+
+  const handleProfileUpdated = (updates) => {
+    setUser((currentUser) => ({
+      ...currentUser,
+      ...updates,
+    }));
   };
 
   if (loading) {
@@ -104,6 +120,7 @@ function Main() {
           user={user}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
+          onProfileUpdated={handleProfileUpdated}
         />
       );
 

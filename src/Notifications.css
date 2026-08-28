@@ -1,14 +1,18 @@
 .notifications-page {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
+  overflow: hidden;
   background: radial-gradient(circle at top, rgba(245, 158, 11, 0.12), transparent 26%), #080808;
   color: #ffffff;
 }
 
 .notifications-main {
-  width: calc(100% - 250px);
+  width: calc(100% - 280px);
   min-width: 0;
-  margin-left: 250px;
+  margin-left: 280px;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .notifications-content {

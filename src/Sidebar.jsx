@@ -5,7 +5,12 @@ import {
   Bell,
   Settings,
   LogOut,
+  Moon,
+  Sun,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
+import { useState } from "react";
 
 import "./Sidebar.css";
 
@@ -14,17 +19,55 @@ function Sidebar({
   onLogout,
   onNavigate,
   currentPage = "dashboard",
+  sidebarOpen = false,
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(
+    () => localStorage.getItem("comlab-sidebar-collapsed") === "true",
+  );
+  const [isLightMode, setIsLightMode] = useState(
+    () => document.documentElement.dataset.theme === "light",
+  );
+
   const navigate = (page) => {
     if (onNavigate) {
       onNavigate(page);
     }
   };
 
+  const toggleTheme = () => {
+    const nextTheme = isLightMode ? "dark" : "light";
+
+    document.documentElement.dataset.theme = nextTheme;
+    localStorage.setItem("comlab-theme", nextTheme);
+    setIsLightMode(nextTheme === "light");
+  };
+
+  const toggleSidebar = () => {
+    const nextCollapsed = !isCollapsed;
+
+    localStorage.setItem("comlab-sidebar-collapsed", String(nextCollapsed));
+    setIsCollapsed(nextCollapsed);
+  };
+
   return (
-    <aside className="app-sidebar">
+    <aside
+      className={`app-sidebar ${
+        isCollapsed ? "sidebar-collapsed" : ""
+      } ${sidebarOpen ? "sidebar-open" : ""}`}
+    >
       {/* BRAND */}
       {/* NAVIGATION */}
+      <button
+        type="button"
+        className="sidebar-collapse-button"
+        onClick={toggleSidebar}
+        aria-label={`${isCollapsed ? "Expand" : "Collapse"} sidebar`}
+        title={`${isCollapsed ? "Expand" : "Collapse"} sidebar`}
+      >
+        {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+        <span>{isCollapsed ? "Expand" : "Collapse"}</span>
+      </button>
+
       <nav className="sidebar-nav">
         <p className="nav-title">MAIN MENU</p>
 
@@ -87,6 +130,16 @@ function Sidebar({
 
       {/* USER / LOGOUT */}
       <div className="sidebar-bottom">
+        <button
+          type="button"
+          className="theme-toggle-button"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${isLightMode ? "dark" : "light"} mode`}
+          title={`Switch to ${isLightMode ? "dark" : "light"} mode`}
+        >
+          {isLightMode ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
+
         <div className="sidebar-user">
           <div className="sidebar-user-avatar">
             {(user?.name || "Admin")

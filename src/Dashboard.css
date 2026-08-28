@@ -3,8 +3,9 @@
 ========================================= */
 
 .dashboard {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
+  overflow: hidden;
   background:
     radial-gradient(circle at top, rgba(245, 158, 11, 0.12), transparent 26%),
     #080808;
@@ -12,9 +13,12 @@
 }
 
 .dashboard-main {
-  width: calc(100% - 250px);
+  width: calc(100% - 280px);
   min-width: 0;
-  margin-left: 250px;
+  margin-left: 280px;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* =========================================
@@ -22,6 +26,9 @@
 ========================================= */
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   height: 75px;
   display: flex;
   align-items: center;

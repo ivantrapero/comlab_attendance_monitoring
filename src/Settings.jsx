@@ -8,15 +8,26 @@ import {
 } from "lucide-react";
 
 import Sidebar from "./Sidebar";
+import {
+  updateEmail,
+  updatePassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "./firebase";
 import "./Settings.css";
 
-function Settings({ user, onLogout, onNavigate }) {
+function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [profile, setProfile] = useState({
     fullName: user?.name || "Administrator",
     email: user?.username || "admin@comlab.edu",
-    role: user?.role || "Administrator",
+    role:
+      localStorage.getItem(`comlab-role-${user?.uid}`) ||
+      user?.role ||
+      "Administrator",
     password: "",
   });
 
@@ -37,10 +48,63 @@ function Settings({ user, onLogout, onNavigate }) {
     }));
 
     setSaved(false);
+    setError("");
   };
 
-  const handleSave = () => {
-    setSaved(true);
+  const handleSave = async () => {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      setError("Your session has expired. Please sign in again.");
+      return;
+    }
+
+    setSaving(true);
+    setSaved(false);
+    setError("");
+
+    try {
+      if (profile.fullName.trim() !== currentUser.displayName) {
+        await updateProfile(currentUser, {
+          displayName: profile.fullName.trim(),
+        });
+      }
+
+      if (profile.email.trim() !== currentUser.email) {
+        await updateEmail(currentUser, profile.email.trim());
+      }
+
+      if (profile.password.trim()) {
+        await updatePassword(currentUser, profile.password);
+      }
+
+      localStorage.setItem(`comlab-role-${currentUser.uid}`, profile.role.trim());
+      setProfile((currentProfile) => ({
+        ...currentProfile,
+        password: "",
+      }));
+      setSaved(true);
+
+      if (onProfileUpdated) {
+        onProfileUpdated({
+          name: profile.fullName.trim(),
+          username: profile.email.trim(),
+          role: profile.role.trim(),
+        });
+      }
+    } catch (saveError) {
+      if (saveError.code === "auth/requires-recent-login") {
+        setError("Please sign in again before changing your email or password.");
+      } else if (saveError.code === "auth/email-already-in-use") {
+        setError("That email address is already in use.");
+      } else if (saveError.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else {
+        setError("Unable to save your profile changes. Please try again.");
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -102,6 +166,8 @@ function Settings({ user, onLogout, onNavigate }) {
               </div>
             )}
 
+            {error && <div className="settings-error">{error}</div>}
+
             <form className="settings-form" onSubmit={(e) => e.preventDefault()}>
               <div className="form-row">
                 <label htmlFor="fullName">Change Name</label>
@@ -160,9 +226,14 @@ function Settings({ user, onLogout, onNavigate }) {
                 />
               </div>
 
-              <button type="button" className="save-button" onClick={handleSave}>
+              <button
+                type="button"
+                className="save-button"
+                onClick={handleSave}
+                disabled={saving}
+              >
                 <Save size={16} />
-                Save Changes
+                {saving ? "Saving..." : "Save Changes"}
               </button>
             </form>
 
