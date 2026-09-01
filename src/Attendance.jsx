@@ -1074,21 +1074,6 @@ function Attendance({ user, onNavigate, onLogout }) {
       }
     );
 
-    const duplicateRecord = records.find(
-      (record) =>
-        record.instructor?.toLowerCase() ===
-          form.instructor.trim().toLowerCase() &&
-        record.date === todayDate &&
-        record.id !== editingRecordId
-    );
-
-    if (duplicateRecord) {
-      alert(
-        "Attendance already exists for this instructor on today's date."
-      );
-      return;
-    }
-
     try {
       const timeInValue =
         form.status === "Present"
