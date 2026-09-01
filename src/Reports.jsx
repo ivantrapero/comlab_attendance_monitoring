@@ -5,6 +5,7 @@ import {
   Download,
   FileSpreadsheet,
   BarChart3,
+  FileText,
 } from "lucide-react";
 
 import Sidebar from "./Sidebar";
@@ -21,6 +22,8 @@ import {
 import { db } from "./firebase";
 
 import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 import "./Reports.css";
 
@@ -62,6 +65,16 @@ function Reports({ user, onLogout, onNavigate }) {
         setLoading(false);
       },
       (error) => {
+        if (
+          error?.code === "permission-denied" ||
+          error?.message?.toLowerCase().includes("permission") ||
+          error?.message?.toLowerCase().includes("insufficient permissions")
+        ) {
+          setAttendance([]);
+          setLoading(false);
+          return;
+        }
+
         console.error(
           "Error loading attendance:",
           error
@@ -184,6 +197,18 @@ function Reports({ user, onLogout, onNavigate }) {
 
   const totalRecords = filteredRecords.length;
 
+  const present = filteredRecords.filter(
+    (record) => record.status === "Present"
+  ).length;
+
+  const absent = filteredRecords.filter(
+    (record) => record.status === "Absent"
+  ).length;
+
+  const late = filteredRecords.filter(
+    (record) => record.status === "Late"
+  ).length;
+
   const completed = filteredRecords.filter(
     (record) =>
       record.status === "Present" &&
@@ -198,13 +223,12 @@ function Reports({ user, onLogout, onNavigate }) {
       !record.timeOut
   ).length;
 
-  const late = filteredRecords.filter(
-    (record) =>
-      record.status === "Present" &&
-      record.reason
-        ?.toLowerCase()
-        .includes("late")
-  ).length;
+  const attendanceRate =
+    totalRecords > 0
+      ? Math.round(
+          ((present + late) / totalRecords) * 100
+        )
+      : 0;
 
   const exportExcel = () => {
     if (filteredRecords.length === 0) {
@@ -261,12 +285,105 @@ function Reports({ user, onLogout, onNavigate }) {
     XLSX.writeFile(workbook, fileName);
   };
 
+  const exportPdf = () => {
+    if (filteredRecords.length === 0) {
+      alert(
+        "There are no attendance records to export."
+      );
+
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageTitle = selectedMonth
+      ? `Attendance Report - ${reportMonthLabel}`
+      : "Attendance Report";
+
+    doc.setFontSize(18);
+    doc.text(pageTitle, 14, 18);
+
+    doc.setFontSize(10);
+    doc.text(
+      `Generated: ${new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}`,
+      14,
+      26
+    );
+
+    const rows = filteredRecords.map((record) => [
+      formatDate(record),
+      record.instructor || "",
+      record.subject || "",
+      record.timeIn || "",
+      record.timeOut || "",
+      record.status || "",
+      record.reason || "",
+    ]);
+
+    autoTable(doc, {
+      head: [["Date", "Instructor", "Subject", "Time In", "Time Out", "Status", "Remarks"]],
+      body: rows,
+      startY: 32,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [245, 158, 11], textColor: [30, 30, 30], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [255, 247, 225] },
+      margin: { left: 14, right: 14 },
+    });
+
+    const fileName = selectedMonth
+      ? `ComLab_Attendance_Report_${selectedMonth}.pdf`
+      : "ComLab_Attendance_Report.pdf";
+
+    doc.save(fileName);
+  };
+
   const clearFilters = () => {
     setDateFrom("");
     setDateTo("");
     setSearch("");
     setSelectedMonth("");
   };
+
+  const monthOptions = useMemo(() => {
+    const startDate = new Date(2026, 7, 1);
+    const currentDate = new Date();
+    const options = [];
+
+    let current = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      1
+    );
+
+    while (
+      current.getFullYear() < currentDate.getFullYear() ||
+      (current.getFullYear() === currentDate.getFullYear() &&
+        current.getMonth() <= currentDate.getMonth())
+    ) {
+      const value = `${current.getFullYear()}-${String(
+        current.getMonth() + 1
+      ).padStart(2, "0")}`;
+
+      options.push({
+        value,
+        label: current.toLocaleString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+      });
+
+      current = new Date(
+        current.getFullYear(),
+        current.getMonth() + 1,
+        1
+      );
+    }
+
+    return options;
+  }, []);
 
   const reportMonthLabel = selectedMonth
     ? new Date(`${selectedMonth}-01T00:00:00`).toLocaleString("en-US", {
@@ -362,18 +479,6 @@ function Reports({ user, onLogout, onNavigate }) {
               </p>
             </div>
 
-            <button
-              type="button"
-              className="export-button"
-              onClick={exportExcel}
-              disabled={
-                filteredRecords.length === 0
-              }
-            >
-              <Download size={17} />
-              Export Excel
-            </button>
-
           </section>
 
           <div className="report-filter-card month-filter-card">
@@ -382,14 +487,23 @@ function Reports({ user, onLogout, onNavigate }) {
                 Select Month
               </label>
 
-              <input
+              <select
                 id="monthFilter"
-                type="month"
                 value={selectedMonth}
                 onChange={(e) =>
                   setSelectedMonth(e.target.value)
                 }
-              />
+              >
+                <option value="">All Months</option>
+                {monthOptions.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <button
@@ -401,22 +515,115 @@ function Reports({ user, onLogout, onNavigate }) {
             </button>
           </div>
 
-          <div className="report-month-banner">
-            <CalendarDays size={16} />
-            <span>Generating report for: {reportMonthLabel}</span>
+          <div className="report-actions-row">
+            <div className="report-month-banner">
+              <CalendarDays size={16} />
+              <span>Generating report for: {reportMonthLabel}</span>
+            </div>
+
+            <div className="export-actions">
+              <button
+                type="button"
+                className="export-button"
+                onClick={exportExcel}
+                disabled={filteredRecords.length === 0}
+              >
+                <Download size={17} />
+                Export Excel
+              </button>
+
+              <button
+                type="button"
+                className="export-button secondary"
+                onClick={exportPdf}
+                disabled={filteredRecords.length === 0}
+              >
+                <FileText size={17} />
+                Export PDF
+              </button>
+            </div>
           </div>
+
+          <section className="report-summary-card-panel">
+            <div className="summary-header-row">
+              <h3>Monthly Summary</h3>
+              <span>{reportMonthLabel}</span>
+            </div>
+
+            <div className="report-summary">
+              <div className="report-summary-card summary-card highlight">
+                <div className="report-icon">
+                  <BarChart3 size={18} />
+                </div>
+                <div>
+                  <span>Total Records</span>
+                  <strong>{totalRecords}</strong>
+                </div>
+              </div>
+
+              <div className="report-summary-card summary-card">
+                <div className="report-icon">
+                  <span className="status-dot present-dot" />
+                </div>
+                <div>
+                  <span>Present</span>
+                  <strong>{present}</strong>
+                </div>
+              </div>
+
+              <div className="report-summary-card summary-card">
+                <div className="report-icon">
+                  <span className="status-dot late-dot" />
+                </div>
+                <div>
+                  <span>Late</span>
+                  <strong>{late}</strong>
+                </div>
+              </div>
+
+              <div className="report-summary-card summary-card">
+                <div className="report-icon">
+                  <span className="status-dot absent-dot" />
+                </div>
+                <div>
+                  <span>Absent</span>
+                  <strong>{absent}</strong>
+                </div>
+              </div>
+
+              <div className="report-summary-card summary-card">
+                <div className="report-icon">
+                  <span className="status-dot active-dot" />
+                </div>
+                <div>
+                  <span>Currently In</span>
+                  <strong>{currentlyIn}</strong>
+                </div>
+              </div>
+
+              <div className="report-summary-card summary-card">
+                <div className="report-icon">
+                  <span className="status-dot rate-dot" />
+                </div>
+                <div>
+                  <span>Attendance Rate</span>
+                  <strong>{attendanceRate}%</strong>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* EXPORT INFO */}
           <div className="export-info">
 
-            <FileSpreadsheet
+            <FileText
               size={19}
             />
 
             <div>
 
               <strong>
-                Excel Export
+                PDF Export
               </strong>
 
               <p>
@@ -425,7 +632,7 @@ function Reports({ user, onLogout, onNavigate }) {
                 downloaded as
                 <b>
                   {" "}
-                  ComLab_Attendance_Report.xlsx
+                  ComLab_Attendance_Report.pdf
                 </b>
                 .
               </p>

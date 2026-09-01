@@ -49,6 +49,19 @@ function Sidebar({
     setIsCollapsed(nextCollapsed);
   };
 
+  const isAdmin = String(user?.role || "Working").trim().toLowerCase() === "administrator" || String(user?.role || "Working").trim().toLowerCase() === "admin";
+  const allowedPages = isAdmin
+    ? ["dashboard", "attendance", "reports", "notifications", "settings"]
+    : ["dashboard", "attendance", "reports", "settings"];
+
+  const navigationItems = [
+    { page: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { page: "attendance", label: "Attendance", icon: ClipboardCheck },
+    { page: "reports", label: "Reports", icon: FileText },
+    { page: "notifications", label: "Notifications", icon: Bell },
+    { page: "settings", label: "Settings", icon: Settings },
+  ].filter((item) => allowedPages.includes(item.page));
+
   return (
     <aside
       className={`app-sidebar ${
@@ -57,75 +70,22 @@ function Sidebar({
     >
       {/* BRAND */}
       {/* NAVIGATION */}
-      <button
-        type="button"
-        className="sidebar-collapse-button"
-        onClick={toggleSidebar}
-        aria-label={`${isCollapsed ? "Expand" : "Collapse"} sidebar`}
-        title={`${isCollapsed ? "Expand" : "Collapse"} sidebar`}
-      >
-        {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-        <span>{isCollapsed ? "Expand" : "Collapse"}</span>
-      </button>
-
       <nav className="sidebar-nav">
         <p className="nav-title">MAIN MENU</p>
 
-        <button
-          type="button"
-          className={`nav-item ${
-            currentPage === "dashboard" ? "active" : ""
-          }`}
-          onClick={() => navigate("dashboard")}
-        >
-          <LayoutDashboard size={18} />
-          <span>Dashboard</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${
-            currentPage === "attendance" ? "active" : ""
-          }`}
-          onClick={() => navigate("attendance")}
-        >
-          <ClipboardCheck size={18} />
-          <span>Attendance</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${
-            currentPage === "reports" ? "active" : ""
-          }`}
-          onClick={() => navigate("reports")}
-        >
-          <FileText size={18} />
-          <span>Reports</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${
-            currentPage === "notifications" ? "active" : ""
-          }`}
-          onClick={() => navigate("notifications")}
-        >
-          <Bell size={18} />
-          <span>Notifications</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${
-            currentPage === "settings" ? "active" : ""
-          }`}
-          onClick={() => navigate("settings")}
-        >
-          <Settings size={18} />
-          <span>Settings</span>
-        </button>
-
+        {navigationItems.map(({ page, label, icon: Icon }) => (
+          <button
+            key={page}
+            type="button"
+            className={`nav-item ${
+              currentPage === page ? "active" : ""
+            }`}
+            onClick={() => navigate(page)}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+          </button>
+        ))}
       </nav>
 
       {/* USER / LOGOUT */}
@@ -165,6 +125,17 @@ function Sidebar({
         >
           <LogOut size={17} />
           <span>Logout</span>
+        </button>
+
+        <button
+          type="button"
+          className="sidebar-collapse-button"
+          onClick={toggleSidebar}
+          aria-label={`${isCollapsed ? "Expand" : "Collapse"} sidebar`}
+          title={`${isCollapsed ? "Expand" : "Collapse"} sidebar`}
+        >
+          {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          <span>{isCollapsed ? "Expand" : "Collapse"}</span>
         </button>
       </div>
     </aside>

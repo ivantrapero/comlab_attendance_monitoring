@@ -21,6 +21,8 @@ const initialTheme =
 
 document.documentElement.dataset.theme = initialTheme;
 
+const staffAccessiblePages = ["dashboard", "attendance", "reports", "notifications", "settings"];
+
 function Main() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,6 +49,16 @@ function Main() {
     return unsubscribe;
   }, []);
 
+  const isAdminUser = () => true;
+
+  const canAccessPage = () => true;
+
+  useEffect(() => {
+    if (user && !staffAccessiblePages.includes(page)) {
+      setPage("dashboard");
+    }
+  }, [user, page]);
+
   const handleLogin = (loginUser) => {
     setUser(loginUser);
     setPage("dashboard");
@@ -54,6 +66,14 @@ function Main() {
 
   const handleLogout = async () => {
     try {
+      if (user?.uid) {
+        localStorage.removeItem(`comlab-role-${user.uid}`);
+      }
+
+      if (user?.username) {
+        localStorage.removeItem(`comlab-role-email-${user.username.trim().toLowerCase()}`);
+      }
+
       await logoutUser();
 
       setUser(null);
@@ -64,6 +84,11 @@ function Main() {
   };
 
   const handleNavigate = (newPage) => {
+    if (!canAccessPage(newPage)) {
+      setPage("dashboard");
+      return;
+    }
+
     setPage(newPage);
   };
 
@@ -86,7 +111,9 @@ function Main() {
     return <App onLogin={handleLogin} />;
   }
 
-  switch (page) {
+  const safePage = staffAccessiblePages.includes(page) ? page : "dashboard";
+
+  switch (safePage) {
     case "attendance":
       return (
         <Attendance

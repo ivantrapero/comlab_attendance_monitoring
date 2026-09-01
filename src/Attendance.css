@@ -8,6 +8,24 @@
   color: #f5f5f5;
 }
 
+.attendance-page.modal-open .attendance-main,
+.attendance-page.modal-open .topbar,
+.attendance-page.modal-open .attendance-content,
+.attendance-page.modal-open .attendance-heading,
+.attendance-page.modal-open .attendance-stats,
+.attendance-page.modal-open .attendance-table-card {
+  filter: blur(3px) saturate(0.75);
+  opacity: 0.72;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.attendance-page.modal-open .app-sidebar {
+  opacity: 0.25;
+  filter: blur(1.2px) saturate(0.7);
+  pointer-events: none;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
 .attendance-main {
   flex: 1;
   min-width: 0;
@@ -246,6 +264,59 @@
   gap: 9px;
 }
 
+.attendance-filter-bar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px 20px 0;
+}
+
+.attendance-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attendance-filter label {
+  color: #888888;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.attendance-filter input,
+.attendance-filter select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #292929;
+  border-radius: 7px;
+  background: #0b0b0b;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 8px;
+  outline: none;
+}
+
+.attendance-filter input:focus,
+.attendance-filter select:focus {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.06);
+}
+
+.clear-filters-button {
+  align-self: end;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 7px;
+  background: rgba(245, 158, 11, 0.06);
+  color: #fbbf24;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .attendance-search {
   width: 220px;
   height: 35px;
@@ -379,6 +450,11 @@
   color: #4ade80;
 }
 
+.attendance-status.late {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+}
+
 .attendance-status.absent {
   background: rgba(239, 68, 68, 0.08);
   color: #f87171;
@@ -496,19 +572,124 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(4px);
+  background: rgba(72, 65, 58, 0.38);
+  backdrop-filter: blur(2px);
 }
 
 .attendance-modal {
   width: min(92vw, 920px);
   max-width: 920px;
   max-height: 92vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(245, 158, 11, 0.2);
   border-radius: 18px;
   background: linear-gradient(180deg, #111111, #0d0d0d);
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="light"] .attendance-modal-overlay {
+  background: rgba(91, 82, 72, 0.28);
+  backdrop-filter: blur(2px);
+}
+
+html[data-theme="light"] .attendance-modal {
+  background: linear-gradient(180deg, #ffffff 0%, #fffdf9 100%);
+  border-color: rgba(217, 119, 6, 0.2);
+  box-shadow: 0 20px 60px rgba(120, 72, 10, 0.12);
+}
+
+.attendance-form {
+  padding: 22px 24px 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 158, 11, 0.4) transparent;
+}
+
+.attendance-form::-webkit-scrollbar {
+  width: 8px;
+}
+
+.attendance-form::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.35);
+}
+
+html[data-theme="light"] .attendance-modal,
+html[data-theme="light"] .timeout-overlay .attendance-modal {
+  background: linear-gradient(180deg, #ffffff 0%, #fffdf9 100%);
+  border-color: rgba(217, 119, 6, 0.2);
+  box-shadow: 0 28px 90px rgba(120, 72, 10, 0.12);
+}
+
+html[data-theme="light"] .modal-header,
+html[data-theme="light"] .timeout-overlay .modal-header,
+html[data-theme="light"] .timeout-info,
+html[data-theme="light"] .schedule-section,
+html[data-theme="light"] .timeout-info-card {
+  background: rgba(255, 250, 240, 0.9);
+  border-color: rgba(217, 119, 6, 0.12);
+}
+
+html[data-theme="light"] .modal-header {
+  background: rgba(255, 251, 245, 0.92);
+}
+
+html[data-theme="light"] .modal-header h2,
+html[data-theme="light"] .timeout-overlay .modal-header h2,
+html[data-theme="light"] .attendance-form label,
+html[data-theme="light"] .form-group label,
+html[data-theme="light"] .time-group > label,
+html[data-theme="light"] .timeout-time-group > label,
+html[data-theme="light"] .timeout-info-card strong,
+html[data-theme="light"] .timeout-info-card span {
+  color: #2b2116;
+}
+
+html[data-theme="light"] .form-group input,
+html[data-theme="light"] .form-group select,
+html[data-theme="light"] .form-group textarea,
+html[data-theme="light"] .time-selects select,
+html[data-theme="light"] .timeout-time-selects select,
+html[data-theme="light"] .status-option,
+html[data-theme="light"] .schedule-section,
+html[data-theme="light"] .timeout-info-card {
+  background: #fffefa;
+  border-color: rgba(217, 119, 6, 0.18);
+  color: #2b2116;
+}
+
+html[data-theme="light"] .form-group input::placeholder,
+html[data-theme="light"] .form-group textarea::placeholder {
+  color: #8b735d;
+}
+
+html[data-theme="light"] .status-option {
+  color: #5a4333 !important;
+}
+
+html[data-theme="light"] .status-option.selected {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(217, 119, 6, 0.4);
+  color: #b45309 !important;
+}
+
+html[data-theme="light"] .status-option.selected.absent-option {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #b91c1c !important;
+}
+
+html[data-theme="light"] .cancel-button {
+  border-color: rgba(217, 119, 6, 0.2);
+  color: #4b3627;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+html[data-theme="light"] .save-button {
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.15);
 }
 
 .modal-header {
@@ -556,7 +737,9 @@
 
 .attendance-form {
   padding: 22px 24px 24px;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(92vh - 120px);
 }
 
 .form-row {
@@ -731,23 +914,36 @@
 
 .form-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 9px;
   padding-top: 5px;
 }
 
+.form-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 142px;
+  min-width: 142px;
+}
+
 .cancel-button,
 .save-button {
+  width: 142px;
+  min-width: 142px;
   height: 39px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 0 15px;
+  padding: 0 18px;
+  box-sizing: border-box;
   border-radius: 7px;
   font-family: inherit;
   font-size: 8px;
   font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
   transition: 0.2s ease;
 }
@@ -772,6 +968,18 @@
 .save-button:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
+}
+
+.attendance-save-button {
+  height: 39px;
+  gap: 7px;
+  padding: 0 15px;
+  font-size: 8px;
+}
+
+.attendance-save-button svg {
+  width: 17px;
+  height: 17px;
 }
 
 .form-label-row {
@@ -1163,17 +1371,19 @@
 
 .timeout-overlay .cancel-button,
 .timeout-overlay .save-button {
+  min-width: 120px;
   height: 39px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
   box-sizing: border-box;
-  padding: 0 15px;
+  padding: 0 18px;
   border-radius: 7px;
   font-family: inherit;
   font-size: 8px;
   font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
   transition: 0.2s ease;
 }

@@ -10,11 +10,15 @@ import {
   Search,
   UserPlus,
   Bell,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
 
 import Sidebar from "./Sidebar";
 
 import { useEffect, useRef, useState } from "react";
+
+import * as XLSX from "xlsx";
 
 import {
   collection,
@@ -41,6 +45,11 @@ function Attendance({ user, onNavigate, onLogout }) {
     useState(false);
 
   const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedSubject, setSelectedSubject] = useState("All");
+  const [sortBy, setSortBy] = useState("newest");
   const [editingRecordId, setEditingRecordId] = useState(null);
 
   const [instructors, setInstructors] = useState([]);
@@ -112,6 +121,15 @@ function Attendance({ user, onNavigate, onLogout }) {
         );
       },
       (error) => {
+        if (
+          error?.code === "permission-denied" ||
+          error?.message?.toLowerCase().includes("permission") ||
+          error?.message?.toLowerCase().includes("insufficient permissions")
+        ) {
+          setInstructors([]);
+          return;
+        }
+
         console.error(
           "Error loading instructors:",
           error
@@ -145,6 +163,15 @@ function Attendance({ user, onNavigate, onLogout }) {
         );
       },
       (error) => {
+        if (
+          error?.code === "permission-denied" ||
+          error?.message?.toLowerCase().includes("permission") ||
+          error?.message?.toLowerCase().includes("insufficient permissions")
+        ) {
+          setRecords([]);
+          return;
+        }
+
         console.error(
           "Error loading attendance:",
           error
@@ -278,6 +305,40 @@ function Attendance({ user, onNavigate, onLogout }) {
       currentTime.getHours() * 60 +
       currentTime.getMinutes()
     );
+  };
+
+  const calculateAttendanceStatus = ({
+    status,
+    timeIn,
+    startTime,
+  }) => {
+    if (status === "Absent") {
+      return "Absent";
+    }
+
+    if (status === "Late") {
+      return "Late";
+    }
+
+    if (!timeIn || !startTime) {
+      return "Present";
+    }
+
+    const timeInMinutes =
+      timeStringToMinutes(timeIn);
+
+    const startMinutes =
+      timeStringToMinutes(startTime);
+
+    if (
+      timeInMinutes !== null &&
+      startMinutes !== null &&
+      timeInMinutes > startMinutes
+    ) {
+      return "Late";
+    }
+
+    return "Present";
   };
 
   /*
@@ -471,7 +532,8 @@ function Attendance({ user, onNavigate, onLogout }) {
 
     records.forEach((record) => {
       if (
-        record.status !== "Present" ||
+        (record.status !== "Present" &&
+          record.status !== "Late") ||
         !record.timeIn ||
         !record.startTime ||
         !record.endTime
@@ -600,7 +662,8 @@ function Attendance({ user, onNavigate, onLogout }) {
   const currentlyInside =
     records.filter((record) => {
       return (
-        record.status === "Present" &&
+        (record.status === "Present" ||
+          record.status === "Late") &&
         record.timeIn &&
         !record.timeOut
       );
@@ -613,6 +676,12 @@ function Attendance({ user, onNavigate, onLogout }) {
     records.filter(
       (record) =>
         record.status === "Present"
+    ).length;
+
+  const lateCount =
+    records.filter(
+      (record) =>
+        record.status === "Late"
     ).length;
 
   const absentCount =
@@ -917,9 +986,7 @@ function Attendance({ user, onNavigate, onLogout }) {
       return;
     }
 
-    if (
-      form.status === "Present"
-    ) {
+    if (form.status === "Present") {
       if (
         !form.inHour ||
         !form.inMinute ||
@@ -998,48 +1065,80 @@ function Attendance({ user, onNavigate, onLogout }) {
       return;
     }
 
+    const todayDate = new Date().toLocaleDateString(
+      "en-US",
+      {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }
+    );
+
+    const duplicateRecord = records.find(
+      (record) =>
+        record.instructor?.toLowerCase() ===
+          form.instructor.trim().toLowerCase() &&
+        record.date === todayDate &&
+        record.id !== editingRecordId
+    );
+
+    if (duplicateRecord) {
+      alert(
+        "Attendance already exists for this instructor on today's date."
+      );
+      return;
+    }
+
     try {
+      const timeInValue =
+        form.status === "Present"
+          ? formatTime(
+              form.inHour,
+              form.inMinute,
+              form.inPeriod
+            )
+          : "";
+
+      const startTimeValue =
+        form.status === "Present"
+          ? formatTime(
+              form.startHour,
+              form.startMinute,
+              form.startPeriod
+            )
+          : "";
+
+      const endTimeValue =
+        form.status === "Present"
+          ? formatTime(
+              form.endHour,
+              form.endMinute,
+              form.endPeriod
+            )
+          : "";
+
+      const computedStatus = calculateAttendanceStatus({
+        status: form.status,
+        timeIn: timeInValue,
+        startTime: startTimeValue,
+      });
+
       const attendanceData = {
         instructor:
           form.instructor,
         subject:
           form.subject,
         status:
-          form.status,
+          computedStatus,
 
-        timeIn:
-          form.status ===
-          "Present"
-            ? formatTime(
-                form.inHour,
-                form.inMinute,
-                form.inPeriod
-              )
-            : "",
+        timeIn: timeInValue,
 
         timeOut:
-          editingRecord?.timeOut ||
-          "",
+          editingRecord?.timeOut || "",
 
-        startTime:
-          form.status ===
-          "Present"
-            ? formatTime(
-                form.startHour,
-                form.startMinute,
-                form.startPeriod
-              )
-            : "",
+        startTime: startTimeValue,
 
-        endTime:
-          form.status ===
-          "Present"
-            ? formatTime(
-                form.endHour,
-                form.endMinute,
-                form.endPeriod
-              )
-            : "",
+        endTime: endTimeValue,
 
         reason:
           form.status ===
@@ -1050,15 +1149,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         recordedBy:
           form.recordedBy.trim(),
 
-        date:
-          new Date().toLocaleDateString(
-            "en-US",
-            {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            }
-          ),
+        date: todayDate,
 
         createdAt:
           Date.now(),
@@ -1409,26 +1500,189 @@ function Attendance({ user, onNavigate, onLogout }) {
    * ============================
    */
 
+  const parseRecordDate = (dateValue) => {
+    if (!dateValue) {
+      return null;
+    }
+
+    const parsed = new Date(dateValue);
+
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    return parsed;
+  };
+
+  const subjectOptions = [
+    ...new Set(
+      records
+        .map((record) => record.subject)
+        .filter(Boolean)
+    ),
+  ];
+
   const filteredRecords =
     records
-      .filter(
-        (record) =>
-          record.instructor
-            ?.toLowerCase()
-            .includes(
-              search.toLowerCase()
-            ) ||
-          record.subject
-            ?.toLowerCase()
-            .includes(
-              search.toLowerCase()
-            )
-      )
-      .sort(
-        (a, b) =>
+      .filter((record) => {
+        const instructor =
+          record.instructor?.toLowerCase() || "";
+
+        const subject =
+          record.subject?.toLowerCase() || "";
+
+        const searchValue =
+          search.trim().toLowerCase();
+
+        const matchesSearch =
+          !searchValue ||
+          instructor.includes(searchValue) ||
+          subject.includes(searchValue);
+
+        const recordDate =
+          parseRecordDate(record.date);
+
+        const fromDate = dateFrom
+          ? new Date(`${dateFrom}T00:00:00`)
+          : null;
+
+        const toDate = dateTo
+          ? new Date(`${dateTo}T23:59:59`)
+          : null;
+
+        const matchesDateFrom =
+          !fromDate ||
+          (recordDate && recordDate >= fromDate);
+
+        const matchesDateTo =
+          !toDate ||
+          (recordDate && recordDate <= toDate);
+
+        const matchesStatus =
+          selectedStatus === "All" ||
+          record.status === selectedStatus;
+
+        const matchesSubject =
+          selectedSubject === "All" ||
+          record.subject === selectedSubject;
+
+        return (
+          matchesSearch &&
+          matchesDateFrom &&
+          matchesDateTo &&
+          matchesStatus &&
+          matchesSubject
+        );
+      })
+      .sort((a, b) => {
+        if (sortBy === "oldest") {
+          return (
+            (a.createdAt || 0) -
+            (b.createdAt || 0)
+          );
+        }
+
+        if (sortBy === "time-in-earliest") {
+          const aMinutes =
+            timeStringToMinutes(a.timeIn) ?? 999999;
+          const bMinutes =
+            timeStringToMinutes(b.timeIn) ?? 999999;
+
+          return aMinutes - bMinutes;
+        }
+
+        if (sortBy === "time-in-latest") {
+          const aMinutes =
+            timeStringToMinutes(a.timeIn) ?? -1;
+          const bMinutes =
+            timeStringToMinutes(b.timeIn) ?? -1;
+
+          return bMinutes - aMinutes;
+        }
+
+        if (sortBy === "status") {
+          const statusOrder = {
+            Present: 1,
+            Late: 2,
+            Absent: 3,
+          };
+
+          return (
+            (statusOrder[a.status] || 99) -
+            (statusOrder[b.status] || 99)
+          );
+        }
+
+        return (
           (b.createdAt || 0) -
           (a.createdAt || 0)
+        );
+      });
+
+  const exportAttendanceData = (
+    fileType = "xlsx"
+  ) => {
+    if (filteredRecords.length === 0) {
+      alert(
+        "There are no attendance records to export for the current filters."
       );
+
+      return;
+    }
+
+    const exportData = filteredRecords.map(
+      (record) => ({
+        Date: record.date || "",
+        "Instructor Name": record.instructor || "",
+        Subject: record.subject || "",
+        "Class Start": record.startTime || "",
+        "Class End": record.endTime || "",
+        "Time In": record.timeIn || "",
+        "Time Out": record.timeOut || "",
+        Status: record.status || "",
+        Reason: record.reason || "",
+        "Recorded By": record.recordedBy || "",
+      })
+    );
+
+    const worksheet =
+      XLSX.utils.json_to_sheet(exportData);
+
+    worksheet["!cols"] = [
+      { wch: 14 },
+      { wch: 24 },
+      { wch: 18 },
+      { wch: 14 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 18 },
+      { wch: 16 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Attendance"
+    );
+
+    const fileName =
+      fileType === "csv"
+        ? "Attendance_Export.csv"
+        : "Attendance_Export.xlsx";
+
+    if (fileType === "csv") {
+      XLSX.writeFile(workbook, fileName, {
+        bookType: "csv",
+      });
+      return;
+    }
+
+    XLSX.writeFile(workbook, fileName);
+  };
 
   /*
    * ============================
@@ -1457,7 +1711,9 @@ function Attendance({ user, onNavigate, onLogout }) {
     );
 
   return (
-    <div className="attendance-page">
+    <div
+      className={`attendance-page ${showForm || showInstructorForm || showTimeoutModal ? "modal-open" : ""}`}
+    >
 
       {/* =========================
           ALARM
@@ -1684,6 +1940,24 @@ function Attendance({ user, onNavigate, onLogout }) {
             </div>
 
             <div className="attendance-stat">
+              <div className="attendance-stat-icon orange">
+                <Clock3
+                  size={20}
+                />
+              </div>
+
+              <div>
+                <span>
+                  Late
+                </span>
+
+                <strong>
+                  {lateCount}
+                </strong>
+              </div>
+            </div>
+
+            <div className="attendance-stat">
               <div className="attendance-stat-icon red">
                 <UserX
                   size={20}
@@ -1702,7 +1976,7 @@ function Attendance({ user, onNavigate, onLogout }) {
             </div>
 
             <div className="attendance-stat">
-              <div className="attendance-stat-icon orange">
+              <div className="attendance-stat-icon blue">
                 <Clock3
                   size={20}
                 />
@@ -1760,7 +2034,110 @@ function Attendance({ user, onNavigate, onLogout }) {
                   />
                   {displayDate}
                 </div>
+
               </div>
+            </div>
+
+            <div className="attendance-filter-bar">
+              <div className="attendance-filter">
+                <label htmlFor="dateFrom">From</label>
+                <input
+                  id="dateFrom"
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) =>
+                    setDateFrom(e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="attendance-filter">
+                <label htmlFor="dateTo">To</label>
+                <input
+                  id="dateTo"
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) =>
+                    setDateTo(e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="attendance-filter">
+                <label htmlFor="subjectFilter">Subject</label>
+                <select
+                  id="subjectFilter"
+                  value={selectedSubject}
+                  onChange={(e) =>
+                    setSelectedSubject(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="All">All</option>
+                  {subjectOptions.map((subject) => (
+                    <option
+                      key={subject}
+                      value={subject}
+                    >
+                      {subject}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="attendance-filter">
+                <label htmlFor="statusFilter">Status</label>
+                <select
+                  id="statusFilter"
+                  value={selectedStatus}
+                  onChange={(e) =>
+                    setSelectedStatus(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="All">All</option>
+                  <option value="Present">Present</option>
+                  <option value="Late">Late</option>
+                  <option value="Absent">Absent</option>
+                </select>
+              </div>
+
+              <div className="attendance-filter">
+                <label htmlFor="sortFilter">Sort</label>
+                <select
+                  id="sortFilter"
+                  value={sortBy}
+                  onChange={(e) =>
+                    setSortBy(e.target.value)
+                  }
+                >
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="time-in-earliest">
+                    Time In: Earliest
+                  </option>
+                  <option value="time-in-latest">
+                    Time In: Latest
+                  </option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+
+              <button
+                type="button"
+                className="clear-filters-button"
+                onClick={() => {
+                  setDateFrom("");
+                  setDateTo("");
+                  setSelectedStatus("All");
+                  setSelectedSubject("All");
+                  setSortBy("newest");
+                }}
+              >
+                Clear
+              </button>
             </div>
 
             <div className="attendance-table-wrapper">
@@ -1862,7 +2239,10 @@ function Attendance({ user, onNavigate, onLogout }) {
                                 record.status ===
                                 "Present"
                                   ? "present"
-                                  : "absent"
+                                  : record.status ===
+                                      "Late"
+                                    ? "late"
+                                    : "absent"
                               }`}
                             >
                               {
@@ -1903,8 +2283,10 @@ function Attendance({ user, onNavigate, onLogout }) {
                                 Delete
                               </button>
 
-                              {record.status ===
-                                "Present" &&
+                                              {(record.status ===
+                                "Present" ||
+                                record.status ===
+                                  "Late") &&
                               record.timeIn &&
                               !record.timeOut ? (
                                 <button
@@ -2154,8 +2536,7 @@ function Attendance({ user, onNavigate, onLogout }) {
 
               {/* PRESENT */}
 
-              {form.status ===
-                "Present" && (
+              {form.status === "Present" && (
                 <>
                   <div className="schedule-section">
                     <div className="schedule-title">
@@ -2543,15 +2924,17 @@ function Attendance({ user, onNavigate, onLogout }) {
                   Cancel
                 </button>
 
-                <button
-                  type="submit"
-                  className="save-button"
-                >
-                  <ClipboardCheck
-                    size={17}
-                  />
-                  Save Attendance
-                </button>
+                <div className="form-action-button">
+                  <button
+                    type="submit"
+                    className="save-button attendance-save-button"
+                  >
+                    <ClipboardCheck
+                      size={17}
+                    />
+                    Save Attendance
+                  </button>
+                </div>
               </div>
             </form>
           </div>

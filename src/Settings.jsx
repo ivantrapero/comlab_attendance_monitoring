@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyRound,
   Mail,
@@ -14,9 +14,12 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "./firebase";
+import { syncUserProfile } from "./firebaseAuth";
 import "./Settings.css";
 
 function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
+  const isAdmin = String(user?.role || "Working").trim().toLowerCase() === "administrator" || String(user?.role || "Working").trim().toLowerCase() === "admin";
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -27,7 +30,7 @@ function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
     role:
       localStorage.getItem(`comlab-role-${user?.uid}`) ||
       user?.role ||
-      "Administrator",
+      "Working",
     password: "",
   });
 
@@ -41,6 +44,10 @@ function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+
+    if (!isAdmin && name === "role") {
+      return;
+    }
 
     setProfile((current) => ({
       ...current,
@@ -64,6 +71,8 @@ function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
     setError("");
 
     try {
+      const nextRole = isAdmin ? profile.role.trim() : (user?.role || "Working");
+
       if (profile.fullName.trim() !== currentUser.displayName) {
         await updateProfile(currentUser, {
           displayName: profile.fullName.trim(),
@@ -78,9 +87,46 @@ function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
         await updatePassword(currentUser, profile.password);
       }
 
-      localStorage.setItem(`comlab-role-${currentUser.uid}`, profile.role.trim());
+      localStorage.setItem(`comlab-role-${currentUser.uid}`, nextRole);
+
+      await syncUserProfile(currentUser, nextRole);
+
+      const savedAccounts = JSON.parse(
+        localStorage.getItem("comlab-user-accounts") || "[]"
+      );
+      const nextAccounts = savedAccounts.map((account) => {
+        const matchesUid = String(account?.uid || account?.id || "") === String(currentUser.uid || "");
+        const matchesEmail = String(account?.email || "").trim().toLowerCase() === String(currentUser.email || "").trim().toLowerCase();
+
+        if (matchesUid || matchesEmail) {
+          return {
+            ...account,
+            id: account.id || currentUser.uid,
+            uid: currentUser.uid,
+            email: currentUser.email || account.email,
+            name: profile.fullName.trim(),
+            role: nextRole,
+          };
+        }
+
+        return account;
+      });
+
+      if (!nextAccounts.some((account) => String(account?.uid || account?.id || "") === String(currentUser.uid || "") || String(account?.email || "").trim().toLowerCase() === String(currentUser.email || "").trim().toLowerCase())) {
+        nextAccounts.unshift({
+          id: currentUser.uid,
+          uid: currentUser.uid,
+          email: currentUser.email || profile.email.trim(),
+          name: profile.fullName.trim(),
+          role: nextRole,
+        });
+      }
+
+      localStorage.setItem("comlab-user-accounts", JSON.stringify(nextAccounts));
+
       setProfile((currentProfile) => ({
         ...currentProfile,
+        role: nextRole,
         password: "",
       }));
       setSaved(true);
@@ -89,7 +135,7 @@ function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
         onProfileUpdated({
           name: profile.fullName.trim(),
           username: profile.email.trim(),
-          role: profile.role.trim(),
+          role: nextRole,
         });
       }
     } catch (saveError) {
@@ -106,6 +152,7 @@ function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
       setSaving(false);
     }
   };
+
 
   return (
     <div className="settings-page">
@@ -201,14 +248,16 @@ function Settings({ user, onLogout, onNavigate, onProfileUpdated }) {
                   <ShieldCheck size={15} />
                   Role
                 </label>
-                <input
+                <select
                   id="role"
                   name="role"
-                  type="text"
                   value={profile.role}
                   onChange={handleChange}
-                  placeholder="Enter role or position"
-                />
+                  disabled={!isAdmin}
+                >
+                  <option value="Administrator">Administrator</option>
+                  <option value="Working">Working</option>
+                </select>
               </div>
 
               <div className="form-row">

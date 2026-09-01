@@ -404,6 +404,25 @@ html {
   gap: 20px;
 }
 
+.login-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #fecaca;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.login-error svg {
+  flex-shrink: 0;
+  color: #f87171;
+}
+
 .form-group label {
   display: block;
 
@@ -608,6 +627,14 @@ html {
 
   box-shadow:
     0 15px 35px rgba(245, 158, 11, 0.25);
+}
+
+.login-button:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  box-shadow: none;
 }
 
 .login-button:active {
@@ -913,15 +940,25 @@ html[data-theme="light"] {
     color: #665441 !important;
   }
 
+  .app-sidebar .sidebar-collapse-button,
   .app-sidebar .theme-toggle-button,
   .app-sidebar .logout-button {
     color: #4f3b27 !important;
     font-weight: 800;
   }
 
+  .app-sidebar .sidebar-collapse-button svg,
   .app-sidebar .theme-toggle-button svg,
   .app-sidebar .logout-button svg {
     color: #c26108 !important;
+  }
+
+  .app-sidebar .sidebar-collapse-button:hover,
+  .app-sidebar .theme-toggle-button:hover,
+  .app-sidebar .logout-button:hover {
+    background: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(217, 119, 6, 0.28) !important;
+    color: #b45309 !important;
   }
 
   .attendance-table th,
@@ -942,6 +979,9 @@ html[data-theme="light"] {
 
   .attendance-search,
   .attendance-date,
+  .attendance-filter input,
+  .attendance-filter select,
+  .clear-filters-button,
   .form-group input,
   .form-group select,
   .form-group textarea,
@@ -953,6 +993,14 @@ html[data-theme="light"] {
     color: #3f3020 !important;
   }
 
+  .attendance-filter-bar {
+    background: #fffaf0 !important;
+    border-color: #f0e2cc !important;
+  }
+
+  .attendance-filter label,
+  .attendance-filter input,
+  .attendance-filter select,
   .attendance-search input,
   .form-group input::placeholder,
   .form-group textarea::placeholder,
@@ -1063,6 +1111,7 @@ html[data-theme="light"] {
   .report-search,
   .notification-search,
   .report-filter input,
+  .report-filter select,
   .clear-filter,
   .input-wrapper input {
     background: #fffefa !important;
@@ -1074,8 +1123,120 @@ html[data-theme="light"] {
   .report-search input,
   .notification-search input,
   .input-wrapper input::placeholder,
-  .report-search input::placeholder {
+  .report-search input::placeholder,
+  .report-filter input::placeholder,
+  .report-filter select {
     color: #806f5b !important;
+  }
+
+  .reports-page,
+  .reports-main,
+  .reports-heading,
+  .reports-header,
+  .report-summary-card,
+  .report-summary-card-panel,
+  .report-filter-card,
+  .report-table-card,
+  .report-month-banner,
+  .export-info {
+    background: #ffffff !important;
+    border-color: rgba(217, 119, 6, 0.22) !important;
+    color: #2b2116 !important;
+    box-shadow: 0 18px 40px rgba(120, 72, 10, 0.09) !important;
+  }
+
+  .reports-heading h2,
+  .reports-header h1,
+  .report-summary-card strong,
+  .report-summary-card-panel h3,
+  .report-table-header h3,
+  .export-info strong,
+  .report-filter label,
+  .report-month-banner,
+  .summary-header-row span,
+  .report-filter-card * {
+    color: #2b2116 !important;
+  }
+
+  .reports-heading p,
+  .reports-header p,
+  .report-summary-card span,
+  .report-summary-card-panel span,
+  .report-table-header p,
+  .export-info p,
+  .report-filter label,
+  .report-table-wrapper td,
+  .report-table-wrapper th,
+  .empty-report,
+  .summary-header-row span {
+    color: #806f5b !important;
+  }
+
+  .report-summary-card-panel,
+  .report-summary-card,
+  .report-month-banner,
+  .export-info {
+    background: #fffdf8 !important;
+  }
+
+  .report-summary-card {
+    border-color: rgba(217, 119, 6, 0.18) !important;
+  }
+
+  .report-summary-card .report-icon {
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #b45309 !important;
+  }
+
+  .status-dot.present-dot {
+    background: #22c55e !important;
+  }
+
+  .status-dot.late-dot {
+    background: #ef4444 !important;
+  }
+
+  .status-dot.absent-dot {
+    background: #f59e0b !important;
+  }
+
+  .status-dot.active-dot {
+    background: #0ea5e9 !important;
+  }
+
+  .status-dot.rate-dot {
+    background: #8b5cf6 !important;
+  }
+
+  .export-button {
+    background: linear-gradient(135deg, #fbbf24, #f97316) !important;
+    color: #3a2208 !important;
+    border: none !important;
+  }
+
+  .export-button.secondary {
+    background: #fffaf0 !important;
+    color: #b45309 !important;
+    border: 1px solid rgba(217, 119, 6, 0.28) !important;
+  }
+
+  .report-filter input,
+  .report-filter select,
+  .clear-filter {
+    background: #fffefa !important;
+    border-color: #e8d6b8 !important;
+    color: #3f3020 !important;
+  }
+
+  .report-filter select {
+    background-image:
+      linear-gradient(45deg, transparent 50%, #c26108 50%),
+      linear-gradient(135deg, #c26108 50%, transparent 50%);
+    background-position:
+      calc(100% - 16px) calc(50% - 2px),
+      calc(100% - 11px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
   }
 
   .dashboard .table-wrapper th,
@@ -1152,6 +1313,241 @@ html[data-theme="light"] {
     font-weight: 700;
   }
 
+
+/* =========================================
+   RESPONSIVE LAYOUT
+========================================= */
+
+@media (max-width: 1100px) {
+  .dashboard-content,
+  .attendance-content,
+  .notifications-content,
+  .reports-content {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .welcome-section,
+  .attendance-heading,
+  .reports-heading {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 850px) {
+  .topbar {
+    height: 68px;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .topbar-title h1 {
+    font-size: 1.25rem;
+  }
+
+  .topbar-title span {
+    font-size: 7px;
+    letter-spacing: 1.4px;
+  }
+
+  .dashboard-content,
+  .attendance-content,
+  .notifications-content,
+  .reports-content {
+    padding: 24px 20px 40px;
+  }
+
+  .welcome-section,
+  .attendance-heading,
+  .reports-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .record-button,
+  .add-attendance-button,
+  .export-button {
+    width: 100%;
+  }
+
+  .attendance-tools,
+  .table-tools {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .attendance-search,
+  .search-box {
+    flex: 1 1 220px;
+    width: auto;
+  }
+
+  .stats-grid,
+  .attendance-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-filter-card {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .report-filter,
+  .search-filter {
+    min-width: min(100%, 240px);
+  }
+
+  .clear-filter {
+    flex: 1 1 150px;
+  }
+
+  .settings-content {
+    padding: 24px 20px 40px;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .topbar-title h1 {
+    font-size: 1.1rem;
+  }
+
+  .topbar-actions {
+    gap: 0;
+  }
+
+  .dashboard-content,
+  .attendance-content,
+  .notifications-content,
+  .reports-content,
+  .settings-content {
+    padding: 18px 15px 32px;
+  }
+
+  .welcome-section,
+  .attendance-heading,
+  .reports-heading,
+  .notifications-panel,
+  .settings-panel {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .welcome-section h2,
+  .attendance-heading h2,
+  .reports-heading h2,
+  .settings-panel-header h2 {
+    font-size: 1.35rem;
+  }
+
+  .stats-grid,
+  .attendance-stats,
+  .quick-grid,
+  .report-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .attendance-tools,
+  .table-tools,
+  .report-filter-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .attendance-search,
+  .search-box,
+  .attendance-date,
+  .report-filter,
+  .search-filter,
+  .notification-search,
+  .clear-filter {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .notification-card {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .notification-card-top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .settings-panel-header {
+    align-items: flex-start;
+  }
+
+  .settings-panel-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .settings-page .save-button,
+  .export-button,
+  .clear-filter {
+    width: 100%;
+  }
+
+  .login-page {
+    padding: 15px;
+  }
+
+  .login-container {
+    min-height: auto;
+    border-radius: 16px;
+  }
+
+  .login-section {
+    padding: 30px 22px;
+  }
+
+  .login-header h2 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar-title span {
+    display: none;
+  }
+
+  .topbar-title h1 {
+    font-size: 1rem;
+  }
+
+  .dashboard-content,
+  .attendance-content,
+  .notifications-content,
+  .reports-content,
+  .settings-content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .login-page {
+    padding: 0;
+  }
+
+  .login-container {
+    min-height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+
+  .login-section {
+    padding: 26px 18px;
+  }
+}
   .empty-state h3 {
     color: #2b2116 !important;
   }

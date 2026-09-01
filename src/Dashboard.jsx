@@ -63,6 +63,15 @@ function Dashboard({ user, onLogout, onNavigate }) {
         setAttendance(data);
       },
       (error) => {
+        if (
+          error?.code === "permission-denied" ||
+          error?.message?.toLowerCase().includes("permission") ||
+          error?.message?.toLowerCase().includes("insufficient permissions")
+        ) {
+          setAttendance([]);
+          return;
+        }
+
         console.error(
           "Error loading attendance:",
           error
@@ -91,6 +100,16 @@ function Dashboard({ user, onLogout, onNavigate }) {
       month: "long",
       day: "numeric",
       year: "numeric",
+    }
+  );
+
+  const liveTimeText = currentTime.toLocaleTimeString(
+    "en-US",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
     }
   );
 
@@ -218,13 +237,18 @@ function Dashboard({ user, onLogout, onNavigate }) {
     (record) => record.status === "Present"
   ).length;
 
+  const late = todayRecords.filter(
+    (record) => record.status === "Late"
+  ).length;
+
   const absent = todayRecords.filter(
     (record) => record.status === "Absent"
   ).length;
 
   const currentlyIn = todayRecords.filter(
     (record) =>
-      record.status === "Present" &&
+      (record.status === "Present" ||
+        record.status === "Late") &&
       record.timeIn &&
       !record.timeOut
   ).length;
@@ -418,6 +442,21 @@ function Dashboard({ user, onLogout, onNavigate }) {
               STATISTICS
           ================================= */}
 
+          <section className="live-time-panel">
+
+            <div className="live-time-meta">
+              <span>Realtime</span>
+              <strong>{liveTimeText}</strong>
+              <small>{today}</small>
+            </div>
+
+            <div className="live-time-status">
+              <span className="live-dot" />
+              Live
+            </div>
+
+          </section>
+
           <section className="stats-grid">
 
             <div className="stat-card">
@@ -457,6 +496,26 @@ function Dashboard({ user, onLogout, onNavigate }) {
 
                 <small>
                   Present instructors
+                </small>
+              </div>
+
+            </div>
+
+            <div className="stat-card">
+
+              <div className="stat-icon orange">
+                <Timer size={21} />
+              </div>
+
+              <div>
+                <span>Late</span>
+
+                <strong>
+                  {late}
+                </strong>
+
+                <small>
+                  Arrived after start time
                 </small>
               </div>
 

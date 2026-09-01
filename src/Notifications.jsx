@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   Search,
   CalendarDays,
-  ArrowRight,
 } from "lucide-react";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "./firebase";
@@ -15,13 +14,15 @@ import "./Notifications.css";
 function Notifications({ user, onLogout, onNavigate }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [attendance, setAttendance] = useState([]);
+  const [userProfiles, setUserProfiles] = useState([]);
   const [search, setSearch] = useState("");
+  const [expandedDates, setExpandedDates] = useState({});
 
   useEffect(() => {
     const attendanceRef = collection(db, "attendance");
     const attendanceQuery = query(attendanceRef, orderBy("createdAt", "desc"));
 
-    const unsubscribe = onSnapshot(
+    const attendanceUnsubscribe = onSnapshot(
       attendanceQuery,
       (snapshot) => {
         const data = snapshot.docs.map((item) => ({
@@ -32,75 +33,101 @@ function Notifications({ user, onLogout, onNavigate }) {
         setAttendance(data);
       },
       (error) => {
+        if (
+          error?.code === "permission-denied" ||
+          error?.message?.toLowerCase().includes("permission") ||
+          error?.message?.toLowerCase().includes("insufficient permissions")
+        ) {
+          setAttendance([]);
+          return;
+        }
+
         console.error("Error loading attendance notifications:", error);
       }
     );
 
-    return () => unsubscribe();
+    const usersRef = collection(db, "users");
+    const usersQuery = query(usersRef, orderBy("updatedAt", "desc"));
+
+    const usersUnsubscribe = onSnapshot(
+      usersQuery,
+      (snapshot) => {
+        const data = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data(),
+        }));
+
+        setUserProfiles(data);
+      },
+      (error) => {
+        if (
+          error?.code === "permission-denied" ||
+          error?.message?.toLowerCase().includes("permission") ||
+          error?.message?.toLowerCase().includes("insufficient permissions")
+        ) {
+          setUserProfiles([]);
+          return;
+        }
+
+        console.error("Error loading user activity notifications:", error);
+      }
+    );
+
+    return () => {
+      attendanceUnsubscribe();
+      usersUnsubscribe();
+    };
   }, []);
 
-  const parseTimeValue = (value) => {
-    if (!value || typeof value !== "string") {
-      return null;
+  const getTimestampValue = (value) => {
+    if (!value) {
+      return Number.NEGATIVE_INFINITY;
     }
 
-    const match = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-
-    if (!match) {
-      return null;
+    if (typeof value?.toDate === "function") {
+      return value.toDate().getTime();
     }
 
-    const hourValue = Number(match[1]);
-    const minuteValue = Number(match[2]);
-    const period = match[3].toUpperCase();
-
-    if (
-      Number.isNaN(hourValue) ||
-      Number.isNaN(minuteValue) ||
-      hourValue < 1 ||
-      hourValue > 12 ||
-      minuteValue < 0 ||
-      minuteValue > 59
-    ) {
-      return null;
+    if (value instanceof Date) {
+      return value.getTime();
     }
 
-    let hour = hourValue;
-
-    if (period === "AM" && hour === 12) {
-      hour = 0;
+    if (typeof value === "string" || typeof value === "number") {
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? Number.NEGATIVE_INFINITY : parsed.getTime();
     }
 
-    if (period === "PM" && hour !== 12) {
-      hour += 12;
-    }
-
-    return hour * 60 + minuteValue;
+    return Number.NEGATIVE_INFINITY;
   };
 
-  const currentMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+  const formatNotificationDateTime = (value) => {
+    const timestamp = getTimestampValue(value);
+
+    if (!Number.isFinite(timestamp)) {
+      return "Recent";
+    }
+
+    return new Date(timestamp).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
 
   const notifications = useMemo(() => {
-    return attendance
+    const attendanceEvents = attendance
       .map((record) => {
         const createdAt = record.createdAt || Date.now();
-        const createdDate = new Date(createdAt);
-        const timeLabel = Number.isNaN(createdDate.getTime())
-          ? "Recent"
-          : createdDate.toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            });
+        const createdAtValue = getTimestampValue(createdAt);
+        const dateLabel = formatNotificationDateTime(createdAt);
 
         if (record.timeOut) {
           return {
             id: `${record.id}-timeout-recorded`,
             type: "timeout",
-            title: "Timeout recorded",
+            title: "Time-out recorded",
             detail: `${record.instructor} (${record.subject}) recorded their time out at ${record.timeOut}.`,
-            time: timeLabel,
-            record,
-            createdAt,
+            time: dateLabel,
+            createdAt: createdAtValue,
           };
         }
 
@@ -108,74 +135,38 @@ function Notifications({ user, onLogout, onNavigate }) {
           return {
             id: `${record.id}-absence`,
             type: "absence",
-            title: "Attendance update",
+            title: "Attendance absence",
             detail: `${record.instructor} (${record.subject}) was marked absent${record.reason ? ` — ${record.reason}` : ""}.`,
-            time: timeLabel,
-            record,
-            createdAt,
+            time: dateLabel,
+            createdAt: createdAtValue,
           };
         }
 
-        if (record.status === "Present" && record.timeIn && record.endTime) {
-          const endMinutes = parseTimeValue(record.endTime);
+        return null;
+      })
+      .filter(Boolean);
 
-          if (endMinutes !== null && currentMinutes >= endMinutes - 5 && currentMinutes < endMinutes) {
-            return {
-              id: `${record.id}-warning`,
-              type: "warning",
-              title: "Class ending soon",
-              detail: `${record.instructor} (${record.subject}) ends in 5 minutes at ${record.endTime}.`,
-              time: timeLabel,
-              record,
-              createdAt,
-            };
-          }
+    const userEvents = userProfiles
+      .map((profile) => {
+        const createdAt = profile.updatedAt || profile.createdAt || Date.now();
+        const createdAtValue = getTimestampValue(createdAt);
+        const dateLabel = formatNotificationDateTime(createdAt);
 
-          if (endMinutes !== null && currentMinutes >= endMinutes) {
-            return {
-              id: `${record.id}-timeout`,
-              type: "timeout",
-              title: "Time out required",
-              detail: `${record.instructor} (${record.subject}) needs time out recorded before the next class begins.`,
-              time: timeLabel,
-              record,
-              createdAt,
-            };
-          }
-
-          return {
-            id: `${record.id}-checkin`,
-            type: "checkin",
-            title: "Attendance recorded",
-            detail: `${record.instructor} (${record.subject}) checked in at ${record.timeIn} and is scheduled to end at ${record.endTime}.`,
-            time: timeLabel,
-            record,
-            createdAt,
-          };
-        }
-
-        if (record.status === "Present" && record.timeIn) {
-          return {
-            id: `${record.id}-present`,
-            type: "checkin",
-            title: "Attendance recorded",
-            detail: `${record.instructor} (${record.subject}) checked in at ${record.timeIn}.`,
-            time: timeLabel,
-            record,
-            createdAt,
-          };
-        }
+        const name = profile.name || profile.email || "User";
+        const role = profile.role || "Working";
 
         return {
-          id: `${record.id}-update`,
+          id: `${profile.id || profile.uid || profile.email}-profile-update`,
           type: "info",
-          title: "System update",
-          detail: `${record.instructor} (${record.subject}) attendance was updated in the system.`,
-          time: timeLabel,
-          record,
-          createdAt,
+          title: "User role updated",
+          detail: `${name} was updated to ${role} role in the system.`,
+          time: dateLabel,
+          createdAt: createdAtValue,
         };
       })
+      .filter((item) => item.detail && item.id);
+
+    return [...attendanceEvents, ...userEvents]
       .filter((item) => {
         const keyword = search.trim().toLowerCase();
 
@@ -185,13 +176,60 @@ function Notifications({ user, onLogout, onNavigate }) {
 
         return (
           item.title.toLowerCase().includes(keyword) ||
-          item.detail.toLowerCase().includes(keyword) ||
-          item.record?.instructor?.toLowerCase().includes(keyword) ||
-          item.record?.subject?.toLowerCase().includes(keyword)
+          item.detail.toLowerCase().includes(keyword)
         );
       })
-      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  }, [attendance, currentMinutes, search]);
+      .sort((a, b) => {
+        const left = Number.isFinite(a.createdAt) ? a.createdAt : Number.NEGATIVE_INFINITY;
+        const right = Number.isFinite(b.createdAt) ? b.createdAt : Number.NEGATIVE_INFINITY;
+        return right - left;
+      });
+  }, [attendance, userProfiles, search]);
+
+  const groupedNotifications = useMemo(() => {
+    const groups = new Map();
+
+    notifications.forEach((item) => {
+      const timestamp = Number.isFinite(item.createdAt) ? item.createdAt : Date.now();
+      const dateKey = new Date(timestamp).toDateString();
+      if (!groups.has(dateKey)) {
+        groups.set(dateKey, []);
+      }
+      groups.get(dateKey).push(item);
+    });
+
+    return [...groups.entries()].map(([dateKey, items]) => ({
+      dateKey,
+      label: (() => {
+        const date = new Date(dateKey);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        if (date.toDateString() === today.toDateString()) {
+          return "Today";
+        }
+
+        if (date.toDateString() === yesterday.toDateString()) {
+          return "Yesterday";
+        }
+
+        return date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+      })(),
+      items,
+    }));
+  }, [notifications]);
+
+  const toggleDateGroup = (dateKey) => {
+    setExpandedDates((current) => ({
+      ...current,
+      [dateKey]: !current[dateKey],
+    }));
+  };
 
   const navigate = (page) => {
     setSidebarOpen(false);
@@ -244,52 +282,68 @@ function Notifications({ user, onLogout, onNavigate }) {
           <section className="notifications-panel">
             <div className="notifications-header">
               <div>
-                <span className="section-tag">SYSTEM ALERTS</span>
-                <h2>Attendance changes</h2>
-              </div>
-
-              <div className="notifications-count">
-                <Bell size={15} />
-                {notifications.length}
+                <span className="section-tag">LAB ALERTS</span>
+                <h2>Notifications</h2>
               </div>
             </div>
 
-            <div className="notification-search">
-              <Search size={15} />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search notifications"
-              />
+            <div className="notification-search-wrap">
+              <div className="notification-search">
+                <Search size={15} />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search notifications"
+                />
+              </div>
             </div>
 
-            {notifications.length > 0 ? (
+            {groupedNotifications.length > 0 ? (
               <div className="notification-list">
-                {notifications.map((item) => (
-                  <div key={item.id} className={`notification-card ${item.type}`}>
-                    <div className="notification-card-icon">
-                      {item.type === "timeout" ? (
-                        <AlertTriangle size={18} />
-                      ) : (
-                        <Clock3 size={18} />
+                {groupedNotifications.map(({ dateKey, label, items }) => {
+                  const isOpen = expandedDates[dateKey] !== false;
+
+                  return (
+                    <div key={dateKey} className="notification-date-group">
+                      <button
+                        type="button"
+                        className="notification-date-toggle"
+                        onClick={() => toggleDateGroup(dateKey)}
+                      >
+                        <span>{label}</span>
+                        <span className={`toggle-indicator ${isOpen ? "open" : ""}`}>
+                          ▾
+                        </span>
+                      </button>
+
+                      {isOpen && (
+                        <div className="notification-date-items">
+                          {items.map((item) => (
+                            <div key={item.id} className={`notification-card ${item.type}`}>
+                              <div className="notification-card-icon">
+                                {item.type === "timeout" ? (
+                                  <AlertTriangle size={18} />
+                                ) : (
+                                  <Clock3 size={18} />
+                                )}
+                              </div>
+
+                              <div className="notification-card-body">
+                                <div className="notification-card-top">
+                                  <strong>{item.title}</strong>
+                                  <span>{item.time}</span>
+                                </div>
+
+                                <p>{item.detail}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
-
-                    <div className="notification-card-body">
-                      <div className="notification-card-top">
-                        <strong>{item.title}</strong>
-                        <span>{item.time}</span>
-                      </div>
-
-                      <p>{item.detail}</p>
-                    </div>
-
-                    <button type="button" className="notification-link" onClick={() => navigate("attendance")}>
-                      View <ArrowRight size={14} />
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="empty-state">
