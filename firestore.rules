@@ -2,30 +2,104 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
     function isSignedIn() {
       return request.auth != null;
     }
 
     function isVerifiedUser() {
-      return isSignedIn() && request.auth.token.email_verified == true;
+      return isSignedIn()
+        && request.auth.token.email_verified == true;
     }
 
+    function isDeveloper() {
+      return isVerifiedUser()
+        && request.auth.token.email == "ivantrapero123@gmail.com";
+    }
+
+    function isAdministrator() {
+      return isVerifiedUser()
+        && exists(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.role in ["Administrator", "administrator", "Admin", "admin"];
+    }
+
+    /*
+     * ATTENDANCE
+     *
+     * Existing behavior:
+     * verified users can read/write.
+     */
     match /attendance/{attendanceId} {
       allow read, write: if isVerifiedUser();
     }
 
+    /*
+     * INSTRUCTORS
+     */
     match /instructors/{instructorId} {
       allow read, write: if isVerifiedUser();
     }
 
+    /*
+     * NOTIFICATIONS
+     */
     match /notifications/{notificationId} {
       allow read, write: if isVerifiedUser();
     }
 
+    /*
+     * USER PROFILE
+     *
+     * Users can read their own profile.
+     *
+     * IMPORTANT:
+     * Users cannot change their own role.
+     */
     match /users/{userId} {
-      allow read, write: if isVerifiedUser() && request.auth.uid == userId;
+
+      allow read: if isVerifiedUser()
+        && request.auth.uid == userId;
+
+      allow create: if isVerifiedUser()
+        && request.auth.uid == userId;
+
+      allow update: if isVerifiedUser()
+        && request.auth.uid == userId
+        && request.resource.data.role
+          == resource.data.role;
+
+      allow delete: if false;
     }
 
+    /*
+     * BUG REPORTS
+     *
+     * ADMINISTRATOR:
+     * Can create reports.
+     *
+     * DEVELOPER:
+     * Can view and delete reports.
+     */
+    match /bugReports/{reportId} {
+
+      allow create: if isAdministrator()
+        && request.resource.data.createdByUid
+          == request.auth.uid;
+
+      allow read: if isDeveloper();
+
+      allow delete: if isDeveloper();
+
+      allow update: if isDeveloper();
+    }
+
+    /*
+     * EVERYTHING ELSE
+     */
     match /{document=**} {
       allow read, write: if false;
     }

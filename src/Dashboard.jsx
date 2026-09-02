@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ArrowRight,
   X,
+  Bug,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -22,15 +23,55 @@ import {
 
 import { db } from "./firebase";
 import Sidebar from "./Sidebar";
+import BugReportButton from "./BugReportButton";
+
+import {
+  subscribeToDeveloperNotes,
+} from "./developerNotes";
 
 import "./Dashboard.css";
 
-function Dashboard({ user, onLogout, onNavigate }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [attendance, setAttendance] = useState([]);
-  const [search, setSearch] = useState("");
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(true);
+function Dashboard({
+  user,
+  onLogout,
+  onNavigate,
+}) {
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
+
+  const [attendance, setAttendance] =
+    useState([]);
+
+  const [search, setSearch] =
+    useState("");
+
+  const [currentTime, setCurrentTime] =
+    useState(new Date());
+
+  const [notificationDrawerOpen, setNotificationDrawerOpen] =
+    useState(true);
+
+  /* =========================================
+     DEVELOPER BUG REPORT NOTIFICATION
+  ========================================= */
+
+  const [pendingBugReports, setPendingBugReports] =
+    useState([]);
+
+  const [bugReportPopupOpen, setBugReportPopupOpen] =
+    useState(false);
+
+  const [bugReportChecked, setBugReportChecked] =
+    useState(false);
+
+  const role = String(
+    user?.role || "",
+  )
+    .trim()
+    .toLowerCase();
+
+  const isDeveloper =
+    role === "developer";
 
   const navigate = (page) => {
     setSidebarOpen(false);
@@ -45,75 +86,184 @@ function Dashboard({ user, onLogout, onNavigate }) {
   ========================================= */
 
   useEffect(() => {
-    const attendanceRef = collection(db, "attendance");
+    const attendanceRef =
+      collection(db, "attendance");
 
     const attendanceQuery = query(
       attendanceRef,
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
     );
 
-    const unsubscribe = onSnapshot(
-      attendanceQuery,
-      (snapshot) => {
-        const data = snapshot.docs.map((item) => ({
-          id: item.id,
-          ...item.data(),
-        }));
+    const unsubscribe =
+      onSnapshot(
+        attendanceQuery,
+        (snapshot) => {
+          const data =
+            snapshot.docs.map(
+              (item) => ({
+                id: item.id,
+                ...item.data(),
+              }),
+            );
 
-        setAttendance(data);
-      },
-      (error) => {
-        if (
-          error?.code === "permission-denied" ||
-          error?.message?.toLowerCase().includes("permission") ||
-          error?.message?.toLowerCase().includes("insufficient permissions")
-        ) {
-          setAttendance([]);
-          return;
-        }
+          setAttendance(data);
+        },
+        (error) => {
+          if (
+            error?.code ===
+              "permission-denied" ||
+            error?.message
+              ?.toLowerCase()
+              .includes(
+                "permission",
+              ) ||
+            error?.message
+              ?.toLowerCase()
+              .includes(
+                "insufficient permissions",
+              )
+          ) {
+            setAttendance([]);
+            return;
+          }
 
-        console.error(
-          "Error loading attendance:",
-          error
-        );
-      }
-    );
+          console.error(
+            "Error loading attendance:",
+            error,
+          );
+        },
+      );
 
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+  /* =========================================
+     CHECK DEVELOPER BUG REPORTS
+  ========================================= */
 
-    return () => clearInterval(timer);
+  useEffect(() => {
+    if (!isDeveloper) {
+      setPendingBugReports([]);
+      setBugReportPopupOpen(false);
+      setBugReportChecked(true);
+      return;
+    }
+
+    setBugReportChecked(false);
+
+    const unsubscribe =
+      subscribeToDeveloperNotes(
+        (reports) => {
+          const pending =
+            reports.filter(
+              (report) =>
+                String(
+                  report?.status || "",
+                )
+                  .trim()
+                  .toLowerCase() !==
+                "done",
+            );
+
+          setPendingBugReports(
+            pending,
+          );
+
+          /*
+           * Only show the popup on the
+           * initial report check after
+           * the developer reaches the
+           * dashboard.
+           */
+          if (!bugReportChecked) {
+            setBugReportPopupOpen(
+              pending.length > 0,
+            );
+
+            setBugReportChecked(true);
+          }
+        },
+        (error) => {
+          console.error(
+            "Error checking developer bug reports:",
+            error,
+          );
+
+          setPendingBugReports([]);
+          setBugReportChecked(true);
+        },
+      );
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [isDeveloper]);
+
+  /* =========================================
+     CLOSE BUG REPORT POPUP
+  ========================================= */
+
+  const handleCloseBugReportPopup =
+    () => {
+      setBugReportPopupOpen(false);
+    };
+
+  /* =========================================
+     VIEW BUG BOARD
+  ========================================= */
+
+  const handleViewBugBoard = () => {
+    setBugReportPopupOpen(false);
+
+    navigate("developer-board");
+  };
+
+  /* =========================================
+     LIVE CLOCK
+  ========================================= */
+
+  useEffect(() => {
+    const timer =
+      setInterval(() => {
+        setCurrentTime(
+          new Date(),
+        );
+      }, 1000);
+
+    return () =>
+      clearInterval(timer);
   }, []);
 
   /* =========================================
      DATE
   ========================================= */
 
-  const today = new Date().toLocaleDateString(
-    "en-US",
-    {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    }
-  );
+  const today =
+    new Date().toLocaleDateString(
+      "en-US",
+      {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      },
+    );
 
-  const liveTimeText = currentTime.toLocaleTimeString(
-    "en-US",
-    {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    }
-  );
+  const liveTimeText =
+    currentTime.toLocaleTimeString(
+      "en-US",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      },
+    );
 
-  const currentHour = new Date().getHours();
+  const currentHour =
+    new Date().getHours();
+
   const greeting =
     currentHour < 12
       ? "Good morning"
@@ -125,29 +275,54 @@ function Dashboard({ user, onLogout, onNavigate }) {
      TODAY'S RECORDS
   ========================================= */
 
-  const todayRecords = attendance.filter(
-    (record) => record.date === today
-  );
+  const todayRecords =
+    attendance.filter(
+      (record) =>
+        record.date === today,
+    );
 
-  const parseTimeValue = (value) => {
-    if (!value || typeof value !== "string") {
+  /* =========================================
+     TIME PARSER
+  ========================================= */
+
+  const parseTimeValue = (
+    value,
+  ) => {
+    if (
+      !value ||
+      typeof value !== "string"
+    ) {
       return null;
     }
 
-    const trimmed = value.trim();
-    const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    const trimmed =
+      value.trim();
+
+    const match =
+      trimmed.match(
+        /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i,
+      );
 
     if (!match) {
       return null;
     }
 
-    const hourValue = Number(match[1]);
-    const minuteValue = Number(match[2]);
-    const period = match[3].toUpperCase();
+    const hourValue =
+      Number(match[1]);
+
+    const minuteValue =
+      Number(match[2]);
+
+    const period =
+      match[3].toUpperCase();
 
     if (
-      Number.isNaN(hourValue) ||
-      Number.isNaN(minuteValue) ||
+      Number.isNaN(
+        hourValue,
+      ) ||
+      Number.isNaN(
+        minuteValue,
+      ) ||
       minuteValue < 0 ||
       minuteValue > 59 ||
       hourValue < 1 ||
@@ -158,166 +333,414 @@ function Dashboard({ user, onLogout, onNavigate }) {
 
     let hour = hourValue;
 
-    if (period === "AM" && hour === 12) {
+    if (
+      period === "AM" &&
+      hour === 12
+    ) {
       hour = 0;
     }
 
-    if (period === "PM" && hour !== 12) {
+    if (
+      period === "PM" &&
+      hour !== 12
+    ) {
       hour += 12;
     }
 
-    return hour * 60 + minuteValue;
+    return (
+      hour * 60 +
+      minuteValue
+    );
   };
 
   const currentMinutes =
-    currentTime.getHours() * 60 + currentTime.getMinutes();
+    currentTime.getHours() *
+      60 +
+    currentTime.getMinutes();
 
-  const liveNotifications = attendance
-    .filter(
-      (record) =>
-        record.status === "Present" &&
-        record.timeIn &&
-        !record.timeOut &&
-        record.endTime
-    )
-    .map((record) => {
-      const endMinutes = parseTimeValue(record.endTime);
+  /* =========================================
+     LIVE NOTIFICATIONS
+  ========================================= */
 
-      if (endMinutes === null) {
+  const liveNotifications =
+    attendance
+      .filter(
+        (record) =>
+          record.status ===
+            "Present" &&
+          record.timeIn &&
+          !record.timeOut &&
+          record.endTime,
+      )
+      .map((record) => {
+        const endMinutes =
+          parseTimeValue(
+            record.endTime,
+          );
+
+        if (
+          endMinutes === null
+        ) {
+          return null;
+        }
+
+        if (
+          currentMinutes >=
+            endMinutes - 5 &&
+          currentMinutes <
+            endMinutes
+        ) {
+          return {
+            id: `${record.id}-warning`,
+            type: "warning",
+            title:
+              "Class ending soon",
+            message: `${record.instructor} (${record.subject}) ends in 5 minutes.`,
+            time: record.endTime,
+          };
+        }
+
+        if (
+          currentMinutes >=
+          endMinutes
+        ) {
+          return {
+            id: `${record.id}-timeout`,
+            type: "timeout",
+            title:
+              "Time out required",
+            message: `${record.instructor} (${record.subject}) needs time out recorded.`,
+            time: record.endTime,
+          };
+        }
+
         return null;
-      }
+      })
+      .filter(Boolean)
+      .slice(0, 4);
 
-      if (
-        currentMinutes >= endMinutes - 5 &&
-        currentMinutes < endMinutes
-      ) {
-        return {
-          id: `${record.id}-warning`,
-          type: "warning",
-          title: "Class ending soon",
-          message: `${record.instructor} (${record.subject}) ends in 5 minutes.`,
-          time: record.endTime,
-        };
-      }
-
-      if (currentMinutes >= endMinutes) {
-        return {
-          id: `${record.id}-timeout`,
-          type: "timeout",
-          title: "Time out required",
-          message: `${record.instructor} (${record.subject}) needs time out recorded.`,
-          time: record.endTime,
-        };
-      }
-
-      return null;
-    })
-    .filter(Boolean)
-    .slice(0, 4);
-
-  const notificationCount = liveNotifications.length;
+  const notificationCount =
+    liveNotifications.length;
 
   useEffect(() => {
-    if (notificationCount > 0) {
-      setNotificationDrawerOpen(true);
+    if (
+      notificationCount > 0
+    ) {
+      setNotificationDrawerOpen(
+        true,
+      );
 
-      const timer = window.setTimeout(() => {
-        setNotificationDrawerOpen(false);
-      }, 4000);
+      const timer =
+        window.setTimeout(
+          () => {
+            setNotificationDrawerOpen(
+              false,
+            );
+          },
+          4000,
+        );
 
-      return () => window.clearTimeout(timer);
+      return () =>
+        window.clearTimeout(
+          timer,
+        );
     }
 
-    setNotificationDrawerOpen(false);
+    setNotificationDrawerOpen(
+      false,
+    );
   }, [notificationCount]);
 
-  const totalRecords = todayRecords.length;
+  /* =========================================
+     STATISTICS
+  ========================================= */
 
-  const present = todayRecords.filter(
-    (record) => record.status === "Present"
-  ).length;
+  const totalRecords =
+    todayRecords.length;
 
-  const late = todayRecords.filter(
-    (record) => record.status === "Late"
-  ).length;
+  const present =
+    todayRecords.filter(
+      (record) =>
+        record.status ===
+          "Present" ||
+        record.status ===
+          "Late",
+    ).length;
 
-  const absent = todayRecords.filter(
-    (record) => record.status === "Absent"
-  ).length;
+  const late =
+    todayRecords.filter(
+      (record) =>
+        record.status ===
+        "Late",
+    ).length;
 
-  const currentlyIn = todayRecords.filter(
-    (record) =>
-      (record.status === "Present" ||
-        record.status === "Late") &&
-      record.timeIn &&
-      !record.timeOut
-  ).length;
+  const absent =
+    todayRecords.filter(
+      (record) =>
+        record.status ===
+        "Absent",
+    ).length;
 
-  const completed = todayRecords.filter(
-    (record) =>
-      record.status === "Present" &&
-      record.timeIn &&
-      record.timeOut
-  ).length;
+  const currentlyIn =
+    todayRecords.filter(
+      (record) =>
+        (
+          record.status ===
+            "Present" ||
+          record.status ===
+            "Late"
+        ) &&
+        record.timeIn &&
+        !record.timeOut,
+    ).length;
+
+  const completed =
+    todayRecords.filter(
+      (record) =>
+        record.status ===
+          "Present" &&
+        record.timeIn &&
+        record.timeOut,
+    ).length;
 
   /* =========================================
      SEARCH
   ========================================= */
 
-  const filteredRecords = todayRecords.filter(
-    (record) => {
-      const instructor =
-        record.instructor?.toLowerCase() || "";
+  const filteredRecords =
+    todayRecords.filter(
+      (record) => {
+        const instructor =
+          record.instructor
+            ?.toLowerCase() ||
+          "";
 
-      const subject =
-        record.subject?.toLowerCase() || "";
+        const subject =
+          record.subject
+            ?.toLowerCase() ||
+          "";
 
-      const searchValue =
-        search.toLowerCase();
+        const searchValue =
+          search.toLowerCase();
 
-      return (
-        instructor.includes(searchValue) ||
-        subject.includes(searchValue)
-      );
-    }
-  );
+        return (
+          instructor.includes(
+            searchValue,
+          ) ||
+          subject.includes(
+            searchValue,
+          )
+        );
+      },
+    );
 
   return (
     <div className="dashboard">
+
+      {/* =====================================
+          DEVELOPER BUG REPORT POPUP
+      ===================================== */}
+
+      {isDeveloper &&
+        bugReportPopupOpen &&
+        pendingBugReports.length >
+          0 && (
+          <div
+            className="bug-report-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bug-report-popup-title"
+          >
+            <div className="bug-report-popup">
+
+              <button
+                type="button"
+                className="bug-report-popup-close"
+                onClick={
+                  handleCloseBugReportPopup
+                }
+                aria-label="Close bug report notification"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="bug-report-popup-icon">
+                <Bug size={28} />
+              </div>
+
+              <div className="bug-report-popup-content">
+
+                <span className="bug-report-popup-label">
+                  Developer Notification
+                </span>
+
+                <h2 id="bug-report-popup-title">
+                  New Bug Report
+                </h2>
+
+                <p>
+                  You have{" "}
+                  <strong>
+                    {
+                      pendingBugReports.length
+                    }{" "}
+                    pending{" "}
+                    {pendingBugReports.length ===
+                    1
+                      ? "report"
+                      : "reports"}
+                  </strong>{" "}
+                  waiting for your attention.
+                </p>
+
+                <div className="bug-report-popup-preview">
+
+                  {pendingBugReports
+                    .slice(0, 3)
+                    .map(
+                      (report) => (
+                        <div
+                          key={
+                            report.id
+                          }
+                          className="bug-report-preview-item"
+                        >
+                          <span
+                            className={`bug-preview-type ${String(
+                              report.type ||
+                                "Note",
+                            ).toLowerCase()}`}
+                          >
+                            {report.type ||
+                              "Note"}
+                          </span>
+
+                          <span>
+                            {report.text}
+                          </span>
+                        </div>
+                      ),
+                    )}
+
+                  {pendingBugReports.length >
+                    3 && (
+                    <small>
+                      +
+                      {pendingBugReports.length -
+                        3}{" "}
+                      more report
+                      {pendingBugReports.length -
+                        3 ===
+                      1
+                        ? ""
+                        : "s"}
+                    </small>
+                  )}
+
+                </div>
+
+              </div>
+
+              <div className="bug-report-popup-actions">
+
+                <button
+                  type="button"
+                  className="bug-report-later-button"
+                  onClick={
+                    handleCloseBugReportPopup
+                  }
+                >
+                  Later
+                </button>
+
+                <button
+                  type="button"
+                  className="bug-report-view-button"
+                  onClick={
+                    handleViewBugBoard
+                  }
+                >
+                  View Bug Board
+                  <ArrowRight size={15} />
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
+      {/* =====================================
+          LIVE NOTIFICATION DRAWER
+      ===================================== */}
+
       {notificationCount > 0 && (
         <aside
-          className={`notification-drawer ${notificationDrawerOpen ? "open" : ""}`}
+          className={`notification-drawer ${
+            notificationDrawerOpen
+              ? "open"
+              : ""
+          }`}
           aria-live="polite"
         >
           <div className="notification-drawer-header">
+
             <div>
-              <span className="drawer-label">System changes</span>
-              <strong>{notificationCount} active</strong>
+              <span className="drawer-label">
+                System changes
+              </span>
+
+              <strong>
+                {notificationCount} active
+              </strong>
             </div>
 
             <button
               type="button"
               className="notification-close"
               aria-label="Close notifications"
-              onClick={() => setNotificationDrawerOpen(false)}
+              onClick={() =>
+                setNotificationDrawerOpen(
+                  false,
+                )
+              }
             >
               <X size={16} />
             </button>
+
           </div>
 
           <div className="notification-drawer-list">
-            {liveNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`notification-drawer-item ${notification.type}`}
-              >
-                <div className="notification-drawer-badge" />
-                <div>
-                  <strong>{notification.title}</strong>
-                  <p>{notification.message}</p>
+
+            {liveNotifications.map(
+              (notification) => (
+                <div
+                  key={
+                    notification.id
+                  }
+                  className={`notification-drawer-item ${notification.type}`}
+                >
+
+                  <div className="notification-drawer-badge" />
+
+                  <div>
+                    <strong>
+                      {
+                        notification.title
+                      }
+                    </strong>
+
+                    <p>
+                      {
+                        notification.message
+                      }
+                    </p>
+                  </div>
+
                 </div>
-              </div>
-            ))}
+              ),
+            )}
+
           </div>
         </aside>
       )}
@@ -341,6 +764,14 @@ function Dashboard({ user, onLogout, onNavigate }) {
       <main className="dashboard-main">
 
         {/* ===================================
+            BUG REPORT BUTTON
+        =================================== */}
+
+        <BugReportButton
+          user={user}
+        />
+
+        {/* ===================================
             TOPBAR
         =================================== */}
 
@@ -353,7 +784,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
               className="mobile-menu"
               onClick={() =>
                 setSidebarOpen(
-                  !sidebarOpen
+                  !sidebarOpen,
                 )
               }
               aria-label="Open menu"
@@ -362,31 +793,43 @@ function Dashboard({ user, onLogout, onNavigate }) {
             </button>
 
             <div className="topbar-title">
+
               <span>
                 COMPUTER LABORATORY
               </span>
 
-              <h1>Dashboard</h1>
+              <h1>
+                Dashboard
+              </h1>
+
             </div>
 
           </div>
 
           <div className="topbar-actions">
+
             <div className="topbar-user">
 
               <div className="user-avatar">
-                {(user?.name || "Admin")
+                {(user?.name ||
+                  "Admin")
                   .charAt(0)
                   .toUpperCase()}
               </div>
 
               <div>
+
                 <strong>
                   {user?.name ||
                     "Administrator"}
                 </strong>
 
-                <span>Online</span>
+                <span>
+                  {isDeveloper
+                    ? "Developer"
+                    : "Administrator"}
+                </span>
+
               </div>
 
             </div>
@@ -416,25 +859,29 @@ function Dashboard({ user, onLogout, onNavigate }) {
               </h2>
 
               <p>
-                Here's the attendance overview
-                for the Computer Laboratory on
-                {" "}
+                Here's the attendance
+                overview for the
+                Computer Laboratory on{" "}
                 {today}.
               </p>
 
             </div>
 
-            <button
-              type="button"
-              className="record-button"
-              onClick={() =>
-                navigate("attendance")
-              }
-            >
-              <ClipboardCheck size={18} />
+            <div className="welcome-time-panel">
 
-              Record Attendance
-            </button>
+              <span>
+                Realtime
+              </span>
+
+              <strong>
+                {liveTimeText}
+              </strong>
+
+              <small>
+                {today}
+              </small>
+
+            </div>
 
           </section>
 
@@ -442,30 +889,18 @@ function Dashboard({ user, onLogout, onNavigate }) {
               STATISTICS
           ================================= */}
 
-          <section className="live-time-panel">
-
-            <div className="live-time-meta">
-              <span>Realtime</span>
-              <strong>{liveTimeText}</strong>
-              <small>{today}</small>
-            </div>
-
-            <div className="live-time-status">
-              <span className="live-dot" />
-              Live
-            </div>
-
-          </section>
-
           <section className="stats-grid">
 
             <div className="stat-card">
 
               <div className="stat-icon gold">
-                <ClipboardCheck size={21} />
+                <ClipboardCheck
+                  size={21}
+                />
               </div>
 
               <div>
+
                 <span>
                   Today's Records
                 </span>
@@ -477,6 +912,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 <small>
                   Attendance entries
                 </small>
+
               </div>
 
             </div>
@@ -484,11 +920,16 @@ function Dashboard({ user, onLogout, onNavigate }) {
             <div className="stat-card">
 
               <div className="stat-icon green">
-                <UserCheck size={21} />
+                <UserCheck
+                  size={21}
+                />
               </div>
 
               <div>
-                <span>Present</span>
+
+                <span>
+                  Present
+                </span>
 
                 <strong>
                   {present}
@@ -497,6 +938,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 <small>
                   Present instructors
                 </small>
+
               </div>
 
             </div>
@@ -504,19 +946,26 @@ function Dashboard({ user, onLogout, onNavigate }) {
             <div className="stat-card">
 
               <div className="stat-icon orange">
-                <Timer size={21} />
+                <Timer
+                  size={21}
+                />
               </div>
 
               <div>
-                <span>Late</span>
+
+                <span>
+                  Late
+                </span>
 
                 <strong>
                   {late}
                 </strong>
 
                 <small>
-                  Arrived after start time
+                  Arrived after start
+                  time
                 </small>
+
               </div>
 
             </div>
@@ -524,11 +973,16 @@ function Dashboard({ user, onLogout, onNavigate }) {
             <div className="stat-card">
 
               <div className="stat-icon red">
-                <UserX size={21} />
+                <UserX
+                  size={21}
+                />
               </div>
 
               <div>
-                <span>Absent</span>
+
+                <span>
+                  Absent
+                </span>
 
                 <strong>
                   {absent}
@@ -537,6 +991,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 <small>
                   Absent instructors
                 </small>
+
               </div>
 
             </div>
@@ -552,6 +1007,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
             <div className="section-header">
 
               <div>
+
                 <h3>
                   Quick Actions
                 </h3>
@@ -559,6 +1015,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 <p>
                   Common attendance tasks
                 </p>
+
               </div>
 
             </div>
@@ -569,15 +1026,20 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 type="button"
                 className="quick-card"
                 onClick={() =>
-                  navigate("attendance")
+                  navigate(
+                    "attendance",
+                  )
                 }
               >
 
                 <div className="quick-icon gold">
-                  <ClipboardCheck size={20} />
+                  <ClipboardCheck
+                    size={20}
+                  />
                 </div>
 
                 <div>
+
                   <strong>
                     Record Attendance
                   </strong>
@@ -586,9 +1048,12 @@ function Dashboard({ user, onLogout, onNavigate }) {
                     Add a new attendance
                     record
                   </span>
+
                 </div>
 
-                <ArrowRight size={15} />
+                <ArrowRight
+                  size={15}
+                />
 
               </button>
 
@@ -596,25 +1061,34 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 type="button"
                 className="quick-card"
                 onClick={() =>
-                  navigate("attendance")
+                  navigate(
+                    "attendance",
+                  )
                 }
               >
 
                 <div className="quick-icon green">
-                  <CalendarDays size={20} />
+                  <CalendarDays
+                    size={20}
+                  />
                 </div>
 
                 <div>
+
                   <strong>
                     Attendance Records
                   </strong>
 
                   <span>
-                    View previous attendance
+                    View previous
+                    attendance
                   </span>
+
                 </div>
 
-                <ArrowRight size={15} />
+                <ArrowRight
+                  size={15}
+                />
 
               </button>
 
@@ -622,26 +1096,34 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 type="button"
                 className="quick-card"
                 onClick={() =>
-                  navigate("reports")
+                  navigate(
+                    "reports",
+                  )
                 }
               >
 
                 <div className="quick-icon orange">
-                  <FileText size={20} />
+                  <FileText
+                    size={20}
+                  />
                 </div>
 
                 <div>
+
                   <strong>
                     Generate Report
                   </strong>
 
                   <span>
-                    Export attendance to
-                    Excel
+                    Export attendance
+                    to Excel
                   </span>
+
                 </div>
 
-                <ArrowRight size={15} />
+                <ArrowRight
+                  size={15}
+                />
 
               </button>
 
@@ -674,12 +1156,16 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 type="button"
                 className="view-all"
                 onClick={() =>
-                  navigate("attendance")
+                  navigate(
+                    "attendance",
+                  )
                 }
               >
                 View All
 
-                <ArrowRight size={13} />
+                <ArrowRight
+                  size={13}
+                />
               </button>
 
             </div>
@@ -698,7 +1184,7 @@ function Dashboard({ user, onLogout, onNavigate }) {
                   value={search}
                   onChange={(e) =>
                     setSearch(
-                      e.target.value
+                      e.target.value,
                     )
                   }
                 />
@@ -707,7 +1193,9 @@ function Dashboard({ user, onLogout, onNavigate }) {
 
               <div className="date-display">
 
-                <CalendarDays size={14} />
+                <CalendarDays
+                  size={14}
+                />
 
                 {today}
 
@@ -724,24 +1212,44 @@ function Dashboard({ user, onLogout, onNavigate }) {
                 <thead>
 
                   <tr>
-                    <th>Instructor</th>
-                    <th>Subject</th>
-                    <th>Time In</th>
-                    <th>Time Out</th>
-                    <th>Status</th>
-                    <th>Recorded By</th>
+                    <th>
+                      Instructor
+                    </th>
+
+                    <th>
+                      Subject
+                    </th>
+
+                    <th>
+                      Time In
+                    </th>
+
+                    <th>
+                      Time Out
+                    </th>
+
+                    <th>
+                      Status
+                    </th>
+
+                    <th>
+                      Recorded By
+                    </th>
                   </tr>
 
                 </thead>
 
                 <tbody>
 
-                  {filteredRecords.length > 0 ? (
-
+                  {filteredRecords.length >
+                  0 ? (
                     filteredRecords.map(
                       (record) => (
-
-                        <tr key={record.id}>
+                        <tr
+                          key={
+                            record.id
+                          }
+                        >
 
                           <td>
 
@@ -749,7 +1257,9 @@ function Dashboard({ user, onLogout, onNavigate }) {
 
                               <div className="table-avatar">
                                 {record.instructor
-                                  ?.charAt(0)
+                                  ?.charAt(
+                                    0,
+                                  )
                                   .toUpperCase()}
                               </div>
 
@@ -792,8 +1302,9 @@ function Dashboard({ user, onLogout, onNavigate }) {
                                   ?.toLowerCase()
                                   .replace(
                                     /\s+/g,
-                                    "-"
-                                  ) || ""
+                                    "-",
+                                  ) ||
+                                ""
                               }`}
                             >
                               {record.status ||
@@ -808,12 +1319,9 @@ function Dashboard({ user, onLogout, onNavigate }) {
                           </td>
 
                         </tr>
-
-                      )
+                      ),
                     )
-
                   ) : (
-
                     <tr>
 
                       <td
@@ -826,7 +1334,6 @@ function Dashboard({ user, onLogout, onNavigate }) {
                       </td>
 
                     </tr>
-
                   )}
 
                 </tbody>

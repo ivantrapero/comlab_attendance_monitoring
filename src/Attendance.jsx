@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import Sidebar from "./Sidebar";
+import BugReportButton from "./BugReportButton";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -55,27 +56,21 @@ function Attendance({ user, onNavigate, onLogout }) {
   const [instructors, setInstructors] = useState([]);
   const [records, setRecords] = useState([]);
 
-  const [currentTime, setCurrentTime] =
-    useState(new Date());
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Alarm
   const [alertMessage, setAlertMessage] = useState("");
   const [alarmType, setAlarmType] = useState("");
-  const [alarmRecord, setAlarmRecord] =
-    useState(null);
+  const [alarmRecord, setAlarmRecord] = useState(null);
 
   const [notifiedClasses, setNotifiedClasses] =
     useState(new Set());
 
   // Timeout
-  const [timeoutRecord, setTimeoutRecord] =
-    useState(null);
-  const [timeoutHour, setTimeoutHour] =
-    useState("");
-  const [timeoutMinute, setTimeoutMinute] =
-    useState("");
-  const [timeoutPeriod, setTimeoutPeriod] =
-    useState("AM");
+  const [timeoutRecord, setTimeoutRecord] = useState(null);
+  const [timeoutHour, setTimeoutHour] = useState("");
+  const [timeoutMinute, setTimeoutMinute] = useState("");
+  const [timeoutPeriod, setTimeoutPeriod] = useState("AM");
 
   const [form, setForm] = useState({
     instructor: "",
@@ -123,8 +118,12 @@ function Attendance({ user, onNavigate, onLogout }) {
       (error) => {
         if (
           error?.code === "permission-denied" ||
-          error?.message?.toLowerCase().includes("permission") ||
-          error?.message?.toLowerCase().includes("insufficient permissions")
+          error?.message
+            ?.toLowerCase()
+            .includes("permission") ||
+          error?.message
+            ?.toLowerCase()
+            .includes("insufficient permissions")
         ) {
           setInstructors([]);
           return;
@@ -165,8 +164,12 @@ function Attendance({ user, onNavigate, onLogout }) {
       (error) => {
         if (
           error?.code === "permission-denied" ||
-          error?.message?.toLowerCase().includes("permission") ||
-          error?.message?.toLowerCase().includes("insufficient permissions")
+          error?.message
+            ?.toLowerCase()
+            .includes("permission") ||
+          error?.message
+            ?.toLowerCase()
+            .includes("insufficient permissions")
         ) {
           setRecords([]);
           return;
@@ -363,6 +366,7 @@ function Attendance({ user, onNavigate, onLogout }) {
       const customAudio = new Audio(
         customAlarmPath
       );
+
       customAudio.loop = true;
       customAudio.volume = 1;
 
@@ -379,16 +383,22 @@ function Attendance({ user, onNavigate, onLogout }) {
 
           const audioContext =
             new AudioContext();
+
           const notes =
             type === "end"
               ? [660, 440, 330]
               : [880, 990, 880];
 
-          const scheduleNote = (note, index) => {
+          const scheduleNote = (
+            note,
+            index
+          ) => {
             const oscillator =
               audioContext.createOscillator();
+
             const gainNode =
               audioContext.createGain();
+
             const startAt =
               audioContext.currentTime +
               index * 0.2;
@@ -407,10 +417,12 @@ function Attendance({ user, onNavigate, onLogout }) {
               0.0001,
               startAt
             );
+
             gainNode.gain.exponentialRampToValueAtTime(
               0.5,
               startAt + 0.03
             );
+
             gainNode.gain.exponentialRampToValueAtTime(
               0.0001,
               startAt + 0.5
@@ -422,45 +434,79 @@ function Attendance({ user, onNavigate, onLogout }) {
             );
 
             oscillator.start(startAt);
-            oscillator.stop(startAt + 0.4);
+            oscillator.stop(
+              startAt + 0.4
+            );
           };
 
-          notes.forEach((note, index) => {
-            scheduleNote(note, index);
-          });
+          notes.forEach(
+            (note, index) => {
+              scheduleNote(
+                note,
+                index
+              );
+            }
+          );
 
-          const intervalId = setInterval(() => {
-            notes.forEach((note, index) => {
-              scheduleNote(note, index);
-            });
-          }, 900);
+          const intervalId =
+            setInterval(() => {
+              notes.forEach(
+                (note, index) => {
+                  scheduleNote(
+                    note,
+                    index
+                  );
+                }
+              );
+            }, 900);
 
           alarmRef.current = {
             stop: () => {
-              clearInterval(intervalId);
-              audioContext.close().catch(() => {});
+              clearInterval(
+                intervalId
+              );
+
+              audioContext
+                .close()
+                .catch(() => {});
             },
+
             close: () => {
-              clearInterval(intervalId);
-              audioContext.close().catch(() => {});
+              clearInterval(
+                intervalId
+              );
+
+              audioContext
+                .close()
+                .catch(() => {});
             },
           };
         });
 
       if (customAudio) {
-        const intervalId = setInterval(() => {
-          customAudio.currentTime = 0;
-          customAudio.play().catch(() => {});
-        }, 1500);
+        const intervalId =
+          setInterval(() => {
+            customAudio.currentTime = 0;
+            customAudio
+              .play()
+              .catch(() => {});
+          }, 1500);
 
         alarmRef.current = {
           stop: () => {
-            clearInterval(intervalId);
+            clearInterval(
+              intervalId
+            );
+
             customAudio.pause();
             customAudio.currentTime = 0;
           },
+
           close: () => {
-            clearInterval(intervalId);
+            clearInterval(
+              intervalId
+            );
+
             customAudio.pause();
             customAudio.currentTime = 0;
           },
@@ -853,7 +899,10 @@ function Attendance({ user, onNavigate, onLogout }) {
    */
 
   const parseTimeValue = (value) => {
-    if (!value || typeof value !== "string") {
+    if (
+      !value ||
+      typeof value !== "string"
+    ) {
       return {
         hour: "",
         minute: "",
@@ -861,8 +910,13 @@ function Attendance({ user, onNavigate, onLogout }) {
       };
     }
 
-    const trimmed = value.trim();
-    const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    const trimmed =
+      value.trim();
+
+    const match =
+      trimmed.match(
+        /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+      );
 
     if (!match) {
       return {
@@ -872,18 +926,27 @@ function Attendance({ user, onNavigate, onLogout }) {
       };
     }
 
-    const hourValue = Number(match[1]);
-    const convertedHour = hourValue % 12 || 12;
+    const hourValue =
+      Number(match[1]);
+
+    const convertedHour =
+      hourValue % 12 || 12;
 
     return {
-      hour: String(convertedHour).padStart(2, "0"),
+      hour: String(
+        convertedHour
+      ).padStart(2, "0"),
+
       minute: match[2],
-      period: match[3].toUpperCase(),
+
+      period:
+        match[3].toUpperCase(),
     };
   };
 
   const resetForm = () => {
     setEditingRecordId(null);
+
     setForm({
       instructor: "",
       subject: "",
@@ -913,46 +976,110 @@ function Attendance({ user, onNavigate, onLogout }) {
     });
   };
 
-  const handleEditRecord = (record) => {
-    const parsedTimeIn = parseTimeValue(record.timeIn);
-    const parsedStartTime = parseTimeValue(record.startTime);
-    const parsedEndTime = parseTimeValue(record.endTime);
+  const handleEditRecord = (
+    record
+  ) => {
+    const parsedTimeIn =
+      parseTimeValue(
+        record.timeIn
+      );
 
-    setEditingRecordId(record.id);
+    const parsedStartTime =
+      parseTimeValue(
+        record.startTime
+      );
+
+    const parsedEndTime =
+      parseTimeValue(
+        record.endTime
+      );
+
+    setEditingRecordId(
+      record.id
+    );
+
     setForm({
-      instructor: record.instructor || "",
-      subject: record.subject || "",
-      status: record.status || "Present",
-      inHour: parsedTimeIn.hour,
-      inMinute: parsedTimeIn.minute,
-      inPeriod: parsedTimeIn.period,
-      startHour: parsedStartTime.hour,
-      startMinute: parsedStartTime.minute,
-      startPeriod: parsedStartTime.period,
-      endHour: parsedEndTime.hour,
-      endMinute: parsedEndTime.minute,
-      endPeriod: parsedEndTime.period,
-      reason: record.reason || "",
-      recordedBy: record.recordedBy || "",
+      instructor:
+        record.instructor ||
+        "",
+
+      subject:
+        record.subject || "",
+
+      status:
+        record.status ||
+        "Present",
+
+      inHour:
+        parsedTimeIn.hour,
+
+      inMinute:
+        parsedTimeIn.minute,
+
+      inPeriod:
+        parsedTimeIn.period,
+
+      startHour:
+        parsedStartTime.hour,
+
+      startMinute:
+        parsedStartTime.minute,
+
+      startPeriod:
+        parsedStartTime.period,
+
+      endHour:
+        parsedEndTime.hour,
+
+      endMinute:
+        parsedEndTime.minute,
+
+      endPeriod:
+        parsedEndTime.period,
+
+      reason:
+        record.reason || "",
+
+      recordedBy:
+        record.recordedBy || "",
     });
+
     setShowForm(true);
   };
 
-  const handleDeleteRecord = async (recordId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this record?"
-    );
+  const handleDeleteRecord = async (
+    recordId
+  ) => {
+    const confirmDelete =
+      window.confirm(
+        "Are you sure you want to delete this record?"
+      );
 
     if (!confirmDelete) {
       return;
     }
 
     try {
-      await deleteDoc(doc(db, "attendance", recordId));
-      alert("Attendance record deleted successfully.");
+      await deleteDoc(
+        doc(
+          db,
+          "attendance",
+          recordId
+        )
+      );
+
+      alert(
+        "Attendance record deleted successfully."
+      );
     } catch (error) {
-      console.error("Error deleting attendance record:", error);
-      alert(`Failed to delete attendance record.\n\n${error.message}`);
+      console.error(
+        "Error deleting attendance record:",
+        error
+      );
+
+      alert(
+        `Failed to delete attendance record.\n\n${error.message}`
+      );
     }
   };
 
@@ -962,13 +1089,16 @@ function Attendance({ user, onNavigate, onLogout }) {
    * ============================
    */
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (
+    e
+  ) => {
     e.preventDefault();
 
     if (!form.instructor) {
       alert(
         "Please select an instructor."
       );
+
       return;
     }
 
@@ -976,6 +1106,7 @@ function Attendance({ user, onNavigate, onLogout }) {
       alert(
         "Please select a subject."
       );
+
       return;
     }
 
@@ -983,6 +1114,7 @@ function Attendance({ user, onNavigate, onLogout }) {
       alert(
         "Please enter who recorded the attendance."
       );
+
       return;
     }
 
@@ -995,6 +1127,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Please select the Time In."
         );
+
         return;
       }
 
@@ -1006,6 +1139,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Please enter the subject start time."
         );
+
         return;
       }
 
@@ -1017,6 +1151,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Please enter the subject end time."
         );
+
         return;
       }
 
@@ -1041,6 +1176,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Please enter a valid schedule."
         );
+
         return;
       }
 
@@ -1051,6 +1187,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Class start and end time cannot be the same."
         );
+
         return;
       }
     }
@@ -1062,17 +1199,19 @@ function Attendance({ user, onNavigate, onLogout }) {
       alert(
         "Please provide a reason for the absence."
       );
+
       return;
     }
 
-    const todayDate = new Date().toLocaleDateString(
-      "en-US",
-      {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }
-    );
+    const todayDate =
+      new Date().toLocaleDateString(
+        "en-US",
+        {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }
+      );
 
     try {
       const timeInValue =
@@ -1102,28 +1241,36 @@ function Attendance({ user, onNavigate, onLogout }) {
             )
           : "";
 
-      const computedStatus = calculateAttendanceStatus({
-        status: form.status,
-        timeIn: timeInValue,
-        startTime: startTimeValue,
-      });
+      const computedStatus =
+        calculateAttendanceStatus({
+          status: form.status,
+          timeIn: timeInValue,
+          startTime:
+            startTimeValue,
+        });
 
       const attendanceData = {
         instructor:
           form.instructor,
+
         subject:
           form.subject,
+
         status:
           computedStatus,
 
-        timeIn: timeInValue,
+        timeIn:
+          timeInValue,
 
         timeOut:
-          editingRecord?.timeOut || "",
+          editingRecord?.timeOut ||
+          "",
 
-        startTime: startTimeValue,
+        startTime:
+          startTimeValue,
 
-        endTime: endTimeValue,
+        endTime:
+          endTimeValue,
 
         reason:
           form.status ===
@@ -1134,7 +1281,8 @@ function Attendance({ user, onNavigate, onLogout }) {
         recordedBy:
           form.recordedBy.trim(),
 
-        date: todayDate,
+        date:
+          todayDate,
 
         createdAt:
           Date.now(),
@@ -1142,11 +1290,17 @@ function Attendance({ user, onNavigate, onLogout }) {
 
       if (editingRecordId) {
         await updateDoc(
-          doc(db, "attendance", editingRecordId),
+          doc(
+            db,
+            "attendance",
+            editingRecordId
+          ),
           attendanceData
         );
 
-        alert("Attendance successfully updated.");
+        alert(
+          "Attendance successfully updated."
+        );
       } else {
         await addDoc(
           collection(
@@ -1156,7 +1310,9 @@ function Attendance({ user, onNavigate, onLogout }) {
           attendanceData
         );
 
-        alert("Attendance successfully saved.");
+        alert(
+          "Attendance successfully saved."
+        );
       }
 
       resetForm();
@@ -1200,6 +1356,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Please enter the instructor name."
         );
+
         return;
       }
 
@@ -1209,6 +1366,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Please add at least one subject."
         );
+
         return;
       }
 
@@ -1270,8 +1428,10 @@ function Attendance({ user, onNavigate, onLogout }) {
           setForm(
             (previousForm) => ({
               ...previousForm,
+
               instructor:
                 existingInstructor.name,
+
               subject:
                 subjects[0],
             })
@@ -1285,7 +1445,9 @@ function Attendance({ user, onNavigate, onLogout }) {
             {
               name:
                 instructorName,
+
               subjects,
+
               createdAt:
                 Date.now(),
             }
@@ -1294,8 +1456,10 @@ function Attendance({ user, onNavigate, onLogout }) {
           setForm(
             (previousForm) => ({
               ...previousForm,
+
               instructor:
                 instructorName,
+
               subject:
                 subjects[0],
             })
@@ -1303,6 +1467,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         }
 
         resetInstructorForm();
+
         setShowInstructorForm(
           false
         );
@@ -1420,6 +1585,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Please select the actual Time Out."
         );
+
         return;
       }
 
@@ -1434,6 +1600,7 @@ function Attendance({ user, onNavigate, onLogout }) {
         alert(
           "Invalid Time Out."
         );
+
         return;
       }
 
@@ -1447,6 +1614,7 @@ function Attendance({ user, onNavigate, onLogout }) {
           {
             timeOut:
               actualTimeOut,
+
             timeoutRecordedAt:
               Date.now(),
           }
@@ -1457,12 +1625,9 @@ function Attendance({ user, onNavigate, onLogout }) {
 
         closeTimeoutModal();
 
-        // Close alarm as well
         setAlertMessage("");
         setAlarmType("");
-        setAlarmRecord(
-          null
-        );
+        setAlarmRecord(null);
 
         alert(
           `Time Out recorded for ${instructorName}.`
@@ -1485,14 +1650,21 @@ function Attendance({ user, onNavigate, onLogout }) {
    * ============================
    */
 
-  const parseRecordDate = (dateValue) => {
+  const parseRecordDate = (
+    dateValue
+  ) => {
     if (!dateValue) {
       return null;
     }
 
-    const parsed = new Date(dateValue);
+    const parsed =
+      new Date(dateValue);
 
-    if (Number.isNaN(parsed.getTime())) {
+    if (
+      Number.isNaN(
+        parsed.getTime()
+      )
+    ) {
       return null;
     }
 
@@ -1502,7 +1674,10 @@ function Attendance({ user, onNavigate, onLogout }) {
   const subjectOptions = [
     ...new Set(
       records
-        .map((record) => record.subject)
+        .map(
+          (record) =>
+            record.subject
+        )
         .filter(Boolean)
     ),
   ];
@@ -1511,45 +1686,69 @@ function Attendance({ user, onNavigate, onLogout }) {
     records
       .filter((record) => {
         const instructor =
-          record.instructor?.toLowerCase() || "";
+          record.instructor
+            ?.toLowerCase() ||
+          "";
 
         const subject =
-          record.subject?.toLowerCase() || "";
+          record.subject
+            ?.toLowerCase() ||
+          "";
 
         const searchValue =
-          search.trim().toLowerCase();
+          search
+            .trim()
+            .toLowerCase();
 
         const matchesSearch =
           !searchValue ||
-          instructor.includes(searchValue) ||
-          subject.includes(searchValue);
+          instructor.includes(
+            searchValue
+          ) ||
+          subject.includes(
+            searchValue
+          );
 
         const recordDate =
-          parseRecordDate(record.date);
+          parseRecordDate(
+            record.date
+          );
 
         const fromDate = dateFrom
-          ? new Date(`${dateFrom}T00:00:00`)
+          ? new Date(
+              `${dateFrom}T00:00:00`
+            )
           : null;
 
         const toDate = dateTo
-          ? new Date(`${dateTo}T23:59:59`)
+          ? new Date(
+              `${dateTo}T23:59:59`
+            )
           : null;
 
         const matchesDateFrom =
           !fromDate ||
-          (recordDate && recordDate >= fromDate);
+          (recordDate &&
+            recordDate >=
+              fromDate);
 
         const matchesDateTo =
           !toDate ||
-          (recordDate && recordDate <= toDate);
+          (recordDate &&
+            recordDate <=
+              toDate);
 
         const matchesStatus =
-          selectedStatus === "All" ||
-          record.status === selectedStatus;
+          selectedStatus ===
+            "All" ||
+          record.status ===
+            selectedStatus;
 
         const matchesSubject =
-          selectedSubject === "All" ||
-          record.subject === selectedSubject;
+          selectedSubject ===
+            "All" ||
+          record.subject ===
+            selectedSubject;
 
         return (
           matchesSearch &&
@@ -1567,22 +1766,44 @@ function Attendance({ user, onNavigate, onLogout }) {
           );
         }
 
-        if (sortBy === "time-in-earliest") {
+        if (
+          sortBy ===
+          "time-in-earliest"
+        ) {
           const aMinutes =
-            timeStringToMinutes(a.timeIn) ?? 999999;
-          const bMinutes =
-            timeStringToMinutes(b.timeIn) ?? 999999;
+            timeStringToMinutes(
+              a.timeIn
+            ) ?? 999999;
 
-          return aMinutes - bMinutes;
+          const bMinutes =
+            timeStringToMinutes(
+              b.timeIn
+            ) ?? 999999;
+
+          return (
+            aMinutes -
+            bMinutes
+          );
         }
 
-        if (sortBy === "time-in-latest") {
+        if (
+          sortBy ===
+          "time-in-latest"
+        ) {
           const aMinutes =
-            timeStringToMinutes(a.timeIn) ?? -1;
-          const bMinutes =
-            timeStringToMinutes(b.timeIn) ?? -1;
+            timeStringToMinutes(
+              a.timeIn
+            ) ?? -1;
 
-          return bMinutes - aMinutes;
+          const bMinutes =
+            timeStringToMinutes(
+              b.timeIn
+            ) ?? -1;
+
+          return (
+            bMinutes -
+            aMinutes
+          );
         }
 
         if (sortBy === "status") {
@@ -1593,8 +1814,12 @@ function Attendance({ user, onNavigate, onLogout }) {
           };
 
           return (
-            (statusOrder[a.status] || 99) -
-            (statusOrder[b.status] || 99)
+            (statusOrder[
+              a.status
+            ] || 99) -
+            (statusOrder[
+              b.status
+            ] || 99)
           );
         }
 
@@ -1604,10 +1829,19 @@ function Attendance({ user, onNavigate, onLogout }) {
         );
       });
 
+  /*
+   * ============================
+   * EXPORT
+   * ============================
+   */
+
   const exportAttendanceData = (
     fileType = "xlsx"
   ) => {
-    if (filteredRecords.length === 0) {
+    if (
+      filteredRecords.length ===
+      0
+    ) {
       alert(
         "There are no attendance records to export for the current filters."
       );
@@ -1615,23 +1849,46 @@ function Attendance({ user, onNavigate, onLogout }) {
       return;
     }
 
-    const exportData = filteredRecords.map(
-      (record) => ({
-        Date: record.date || "",
-        "Instructor Name": record.instructor || "",
-        Subject: record.subject || "",
-        "Class Start": record.startTime || "",
-        "Class End": record.endTime || "",
-        "Time In": record.timeIn || "",
-        "Time Out": record.timeOut || "",
-        Status: record.status || "",
-        Reason: record.reason || "",
-        "Recorded By": record.recordedBy || "",
-      })
-    );
+    const exportData =
+      filteredRecords.map(
+        (record) => ({
+          Date:
+            record.date || "",
+
+          "Instructor Name":
+            record.instructor ||
+            "",
+
+          Subject:
+            record.subject || "",
+
+          "Class Start":
+            record.startTime || "",
+
+          "Class End":
+            record.endTime || "",
+
+          "Time In":
+            record.timeIn || "",
+
+          "Time Out":
+            record.timeOut || "",
+
+          Status:
+            record.status || "",
+
+          Reason:
+            record.reason || "",
+
+          "Recorded By":
+            record.recordedBy || "",
+        })
+      );
 
     const worksheet =
-      XLSX.utils.json_to_sheet(exportData);
+      XLSX.utils.json_to_sheet(
+        exportData
+      );
 
     worksheet["!cols"] = [
       { wch: 14 },
@@ -1646,7 +1903,8 @@ function Attendance({ user, onNavigate, onLogout }) {
       { wch: 16 },
     ];
 
-    const workbook = XLSX.utils.book_new();
+    const workbook =
+      XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(
       workbook,
@@ -1660,13 +1918,21 @@ function Attendance({ user, onNavigate, onLogout }) {
         : "Attendance_Export.xlsx";
 
     if (fileType === "csv") {
-      XLSX.writeFile(workbook, fileName, {
-        bookType: "csv",
-      });
+      XLSX.writeFile(
+        workbook,
+        fileName,
+        {
+          bookType: "csv",
+        }
+      );
+
       return;
     }
 
-    XLSX.writeFile(workbook, fileName);
+    XLSX.writeFile(
+      workbook,
+      fileName
+    );
   };
 
   /*
@@ -1695,10 +1961,28 @@ function Attendance({ user, onNavigate, onLogout }) {
       }
     );
 
+  /*
+   * ============================
+   * RENDER
+   * ============================
+   */
+
   return (
     <div
-      className={`attendance-page ${showForm || showInstructorForm || showTimeoutModal ? "modal-open" : ""}`}
+      className={`attendance-page ${
+        showForm ||
+        showInstructorForm ||
+        showTimeoutModal
+          ? "modal-open"
+          : ""
+      }`}
     >
+
+      {/* =========================
+          REPORT BUG
+      ========================= */}
+
+      <BugReportButton user={user} />
 
       {/* =========================
           ALARM
@@ -1715,7 +1999,8 @@ function Attendance({ user, onNavigate, onLogout }) {
           <div className="alarm-card">
             <div className="alarm-header">
               <div className="alarm-icon">
-                {alarmType === "end" ? (
+                {alarmType ===
+                "end" ? (
                   <Clock3 size={36} />
                 ) : (
                   <Bell size={36} />
@@ -1726,16 +2011,23 @@ function Attendance({ user, onNavigate, onLogout }) {
                 type="button"
                 className="alarm-close"
                 onClick={() => {
-                  if (alarmRef.current) {
+                  if (
+                    alarmRef.current
+                  ) {
                     alarmRef.current.stop();
                     alarmRef.current.close();
-                    alarmRef.current = null;
+                    alarmRef.current =
+                      null;
                   }
 
                   setAlertMessage(
                     ""
                   );
-                  setAlarmType("");
+
+                  setAlarmType(
+                    ""
+                  );
+
                   setAlarmRecord(
                     null
                   );
@@ -1747,28 +2039,42 @@ function Attendance({ user, onNavigate, onLogout }) {
 
             <div className="alarm-content">
               <span className="alarm-label">
-                {alarmType === "end"
+                {alarmType ===
+                "end"
                   ? "Time Out Required"
                   : "Class Ending Soon"}
               </span>
 
               <strong>
-                {alarmType === "end"
+                {alarmType ===
+                "end"
                   ? "TIME OUT REQUIRED"
                   : "CLASS ENDING SOON"}
               </strong>
 
-              <p>{alertMessage}</p>
+              <p>
+                {alertMessage}
+              </p>
 
-              {alarmType === "end" &&
+              {alarmType ===
+                "end" &&
                 alarmRecord && (
                   <button
                     type="button"
                     className="alarm-timeout-button"
                     onClick={() => {
-                      setAlertMessage("");
-                      setAlarmType("");
-                      setAlarmRecord(null);
+                      setAlertMessage(
+                        ""
+                      );
+
+                      setAlarmType(
+                        ""
+                      );
+
+                      setAlarmRecord(
+                        null
+                      );
+
                       openTimeoutModal(
                         alarmRecord
                       );
@@ -1827,8 +2133,10 @@ function Attendance({ user, onNavigate, onLogout }) {
           <div className="topbar-actions">
             <div className="topbar-user">
               <div className="user-avatar">
-                {(user?.name ||
-                  "Admin")
+                {(
+                  user?.name ||
+                  "Admin"
+                )
                   .charAt(0)
                   .toUpperCase()}
               </div>
@@ -1879,6 +2187,7 @@ function Attendance({ user, onNavigate, onLogout }) {
               }
             >
               <Plus size={18} />
+
               Record Attendance
             </button>
           </section>
@@ -2004,7 +2313,9 @@ function Attendance({ user, onNavigate, onLogout }) {
                   <input
                     type="text"
                     placeholder="Search instructor or subject..."
-                    value={search}
+                    value={
+                      search
+                    }
                     onChange={(e) =>
                       setSearch(
                         e.target.value
@@ -2017,96 +2328,155 @@ function Attendance({ user, onNavigate, onLogout }) {
                   <CalendarDays
                     size={15}
                   />
+
                   {displayDate}
                 </div>
-
               </div>
             </div>
 
             <div className="attendance-filter-bar">
               <div className="attendance-filter">
-                <label htmlFor="dateFrom">From</label>
+                <label htmlFor="dateFrom">
+                  From
+                </label>
+
                 <input
                   id="dateFrom"
                   type="date"
-                  value={dateFrom}
+                  value={
+                    dateFrom
+                  }
                   onChange={(e) =>
-                    setDateFrom(e.target.value)
+                    setDateFrom(
+                      e.target.value
+                    )
                   }
                 />
               </div>
 
               <div className="attendance-filter">
-                <label htmlFor="dateTo">To</label>
+                <label htmlFor="dateTo">
+                  To
+                </label>
+
                 <input
                   id="dateTo"
                   type="date"
-                  value={dateTo}
+                  value={
+                    dateTo
+                  }
                   onChange={(e) =>
-                    setDateTo(e.target.value)
+                    setDateTo(
+                      e.target.value
+                    )
                   }
                 />
               </div>
 
               <div className="attendance-filter">
-                <label htmlFor="subjectFilter">Subject</label>
+                <label htmlFor="subjectFilter">
+                  Subject
+                </label>
+
                 <select
                   id="subjectFilter"
-                  value={selectedSubject}
+                  value={
+                    selectedSubject
+                  }
                   onChange={(e) =>
                     setSelectedSubject(
                       e.target.value
                     )
                   }
                 >
-                  <option value="All">All</option>
-                  {subjectOptions.map((subject) => (
-                    <option
-                      key={subject}
-                      value={subject}
-                    >
-                      {subject}
-                    </option>
-                  ))}
+                  <option value="All">
+                    All
+                  </option>
+
+                  {subjectOptions.map(
+                    (subject) => (
+                      <option
+                        key={
+                          subject
+                        }
+                        value={
+                          subject
+                        }
+                      >
+                        {subject}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
               <div className="attendance-filter">
-                <label htmlFor="statusFilter">Status</label>
+                <label htmlFor="statusFilter">
+                  Status
+                </label>
+
                 <select
                   id="statusFilter"
-                  value={selectedStatus}
+                  value={
+                    selectedStatus
+                  }
                   onChange={(e) =>
                     setSelectedStatus(
                       e.target.value
                     )
                   }
                 >
-                  <option value="All">All</option>
-                  <option value="Present">Present</option>
-                  <option value="Late">Late</option>
-                  <option value="Absent">Absent</option>
+                  <option value="All">
+                    All
+                  </option>
+
+                  <option value="Present">
+                    Present
+                  </option>
+
+                  <option value="Late">
+                    Late
+                  </option>
+
+                  <option value="Absent">
+                    Absent
+                  </option>
                 </select>
               </div>
 
               <div className="attendance-filter">
-                <label htmlFor="sortFilter">Sort</label>
+                <label htmlFor="sortFilter">
+                  Sort
+                </label>
+
                 <select
                   id="sortFilter"
                   value={sortBy}
                   onChange={(e) =>
-                    setSortBy(e.target.value)
+                    setSortBy(
+                      e.target.value
+                    )
                   }
                 >
-                  <option value="newest">Newest</option>
-                  <option value="oldest">Oldest</option>
+                  <option value="newest">
+                    Newest
+                  </option>
+
+                  <option value="oldest">
+                    Oldest
+                  </option>
+
                   <option value="time-in-earliest">
                     Time In: Earliest
                   </option>
+
                   <option value="time-in-latest">
                     Time In: Latest
                   </option>
-                  <option value="status">Status</option>
+
+                  <option value="status">
+                    Status
+                  </option>
                 </select>
               </div>
 
@@ -2116,9 +2486,15 @@ function Attendance({ user, onNavigate, onLogout }) {
                 onClick={() => {
                   setDateFrom("");
                   setDateTo("");
-                  setSelectedStatus("All");
-                  setSelectedSubject("All");
-                  setSortBy("newest");
+                  setSelectedStatus(
+                    "All"
+                  );
+                  setSelectedSubject(
+                    "All"
+                  );
+                  setSortBy(
+                    "newest"
+                  );
                 }}
               >
                 Clear
@@ -2252,7 +2628,9 @@ function Attendance({ user, onNavigate, onLogout }) {
                                 type="button"
                                 className="record-action-button edit"
                                 onClick={() =>
-                                  handleEditRecord(record)
+                                  handleEditRecord(
+                                    record
+                                  )
                                 }
                               >
                                 Edit
@@ -2262,13 +2640,15 @@ function Attendance({ user, onNavigate, onLogout }) {
                                 type="button"
                                 className="record-action-button delete"
                                 onClick={() =>
-                                  handleDeleteRecord(record.id)
+                                  handleDeleteRecord(
+                                    record.id
+                                  )
                                 }
                               >
                                 Delete
                               </button>
 
-                                              {(record.status ===
+                              {(record.status ===
                                 "Present" ||
                                 record.status ===
                                   "Late") &&
@@ -2278,12 +2658,15 @@ function Attendance({ user, onNavigate, onLogout }) {
                                   type="button"
                                   className="timeout-table-button"
                                   onClick={() =>
-                                    openTimeoutModal(record)
+                                    openTimeoutModal(
+                                      record
+                                    )
                                   }
                                 >
                                   <Clock3
                                     size={15}
                                   />
+
                                   Time Out
                                 </button>
                               ) : null}
@@ -2317,7 +2700,6 @@ function Attendance({ user, onNavigate, onLogout }) {
       {showForm && (
         <div className="attendance-modal-overlay">
           <div className="attendance-modal">
-
             <div className="modal-header">
               <div>
                 <span>
@@ -2334,6 +2716,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                 type="button"
                 onClick={() => {
                   resetForm();
+
                   setShowForm(
                     false
                   );
@@ -2369,6 +2752,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                     <UserPlus
                       size={13}
                     />
+
                     Add Instructor
                   </button>
                 </div>
@@ -2521,7 +2905,8 @@ function Attendance({ user, onNavigate, onLogout }) {
 
               {/* PRESENT */}
 
-              {form.status === "Present" && (
+              {form.status ===
+                "Present" && (
                 <>
                   <div className="schedule-section">
                     <div className="schedule-title">
@@ -2901,6 +3286,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                   className="cancel-button"
                   onClick={() => {
                     resetForm();
+
                     setShowForm(
                       false
                     );
@@ -2917,6 +3303,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                     <ClipboardCheck
                       size={17}
                     />
+
                     Save Attendance
                   </button>
                 </div>
@@ -2985,6 +3372,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                   <span>
                     Instructor
                   </span>
+
                   <strong className="timeout-instructor">
                     {
                       timeoutRecord.instructor
@@ -2996,6 +3384,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                   <span>
                     Subject
                   </span>
+
                   <strong className="timeout-subject">
                     {
                       timeoutRecord.subject
@@ -3007,6 +3396,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                   <span>
                     Scheduled End
                   </span>
+
                   <strong className="timeout-scheduled-end">
                     {
                       timeoutRecord.endTime ||
@@ -3024,7 +3414,6 @@ function Attendance({ user, onNavigate, onLogout }) {
                 </label>
 
                 <div className="time-selects timeout-time-selects">
-
                   <select
                     value={
                       timeoutHour
@@ -3155,7 +3544,6 @@ function Attendance({ user, onNavigate, onLogout }) {
       {showInstructorForm && (
         <div className="attendance-modal-overlay instructor-overlay">
           <div className="attendance-modal instructor-modal">
-
             <div className="modal-header">
               <div>
                 <span>
@@ -3226,6 +3614,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                     }
                   >
                     <Plus size={13} />
+
                     Add More Subject
                   </button>
                 </div>

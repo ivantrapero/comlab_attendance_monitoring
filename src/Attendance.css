@@ -46,7 +46,8 @@
   justify-content: space-between;
   padding: 0 32px;
   border-bottom: 1px solid rgba(245, 158, 11, 0.15);
-  background: linear-gradient(180deg, rgba(17, 17, 17, 0.98), rgba(10, 10, 10, 0.9));
+  background: #111111;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
 }
 
 .topbar-left {

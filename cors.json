@@ -1,0 +1,23 @@
+[
+  {
+    "origin": [
+      "http://localhost:5173"
+    ],
+    "method": [
+      "GET",
+      "POST",
+      "PUT",
+      "DELETE",
+      "HEAD"
+    ],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "x-goog-resumable",
+      "x-goog-upload-command",
+      "x-goog-upload-protocol",
+      "x-goog-upload-status"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

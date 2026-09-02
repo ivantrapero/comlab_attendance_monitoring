@@ -3,81 +3,326 @@ import {
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { auth } from "./firebase";
 
-export const normalizeAccountRole = (role) => {
-  const value = String(role || "Working").trim().toLowerCase();
+import {
+  doc,
+  getDoc,
+} from "firebase/firestore";
 
-  if (["working", "staff", "employee", "worker"].includes(value)) {
-    return "Working";
+import {
+  auth,
+  db,
+} from "./firebase";
+
+export const DEVELOPER_EMAIL =
+  "ivantrapero123@gmail.com";
+
+export const isDeveloperEmail = (
+  email,
+) => {
+  return (
+    String(email || "")
+      .trim()
+      .toLowerCase() ===
+    DEVELOPER_EMAIL.toLowerCase()
+  );
+};
+
+export const normalizeAccountRole = (
+  role,
+  email = "",
+) => {
+  const value = String(
+    role || "",
+  )
+    .trim()
+    .toLowerCase();
+
+  /*
+   * DEVELOPER ALWAYS WINS.
+   */
+  if (
+    isDeveloperEmail(email) ||
+    value === "developer" ||
+    value === "dev"
+  ) {
+    return "Developer";
   }
 
-  if (["admin", "administrator", "superadmin", "owner"].includes(value)) {
+  /*
+   * Administrator roles.
+   */
+  if (
+    value ===
+      "administrator" ||
+    value === "admin"
+  ) {
     return "Administrator";
   }
 
-  return "Working";
+  /*
+   * Working/staff roles.
+   */
+  if (
+    value === "working" ||
+    value === "staff" ||
+    value === "employee" ||
+    value === "worker"
+  ) {
+    return "Working";
+  }
+
+  return "Administrator";
 };
 
-export const persistRoleCache = (firebaseUser, role) => {
+export const getUserRole = (
+  user,
+) => {
+  if (!user) {
+    return null;
+  }
+
+  return normalizeAccountRole(
+    user.role,
+    user.email,
+  );
+};
+
+export const isDeveloper = (
+  user,
+) => {
+  return (
+    getUserRole(user) ===
+    "Developer"
+  );
+};
+
+export const isAdministrator = (
+  user,
+) => {
+  return (
+    getUserRole(user) ===
+    "Administrator"
+  );
+};
+
+export const canWriteBugReport = (
+  user,
+) => {
+  return isAdministrator(
+    user,
+  );
+};
+
+export const canViewBugReports = (
+  user,
+) => {
+  return isDeveloper(user);
+};
+
+export const persistRoleCache = (
+  firebaseUser,
+  role,
+) => {
   if (!firebaseUser) {
     return;
   }
 
-  const normalizedRole = normalizeAccountRole(role);
-  const uid = firebaseUser?.uid ? String(firebaseUser.uid) : "";
-  const normalizedEmail = (firebaseUser?.email || "").trim().toLowerCase();
+  const normalizedRole =
+    normalizeAccountRole(
+      role,
+      firebaseUser.email,
+    );
+
+  const uid =
+    firebaseUser.uid
+      ? String(
+          firebaseUser.uid,
+        )
+      : "";
+
+  const normalizedEmail = (
+    firebaseUser.email ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
 
   if (uid) {
-    localStorage.setItem(`comlab-role-${uid}`, normalizedRole);
+    localStorage.setItem(
+      `comlab-role-${uid}`,
+      normalizedRole,
+    );
   }
 
   if (normalizedEmail) {
-    localStorage.setItem(`comlab-role-email-${normalizedEmail}`, normalizedRole);
-    localStorage.setItem(`comlab-role-${normalizedEmail}`, normalizedRole);
+    localStorage.setItem(
+      `comlab-role-email-${normalizedEmail}`,
+      normalizedRole,
+    );
+
+    localStorage.setItem(
+      `comlab-role-${normalizedEmail}`,
+      normalizedRole,
+    );
   }
 };
 
-export const loginUser = async (email, password) => {
+export const loginUser = async (
+  email,
+  password,
+) => {
   return await signInWithEmailAndPassword(
     auth,
     email,
-    password
+    password,
   );
 };
 
-export const syncUserProfile = async (firebaseUser, roleOverride = null) => {
-  if (!firebaseUser) {
-    return null;
-  }
+export const syncUserProfile =
+  async (
+    firebaseUser,
+    roleOverride = null,
+  ) => {
+    if (!firebaseUser) {
+      return null;
+    }
 
-  const desiredRole = normalizeAccountRole(
-    roleOverride ||
-      localStorage.getItem(`comlab-role-${firebaseUser.uid}`) ||
+    const normalizedEmail = (
+      firebaseUser.email ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+    /*
+     * The developer email always
+     * receives Developer role.
+     */
+    if (
+      isDeveloperEmail(
+        normalizedEmail,
+      )
+    ) {
+      persistRoleCache(
+        firebaseUser,
+        "Developer",
+      );
+
+      return {
+        uid: firebaseUser.uid,
+        username:
+          normalizedEmail,
+        name:
+          firebaseUser.displayName ||
+          "Developer",
+        email:
+          normalizedEmail,
+        role: "Developer",
+        updatedAt:
+          new Date().toISOString(),
+      };
+    }
+
+    /*
+     * Try to read the user's
+     * Firestore profile.
+     */
+    let firestoreRole =
+      null;
+
+    let firestoreName =
+      null;
+
+    try {
+      const userRef = doc(
+        db,
+        "users",
+        firebaseUser.uid,
+      );
+
+      const userSnapshot =
+        await getDoc(
+          userRef,
+        );
+
+      if (
+        userSnapshot.exists()
+      ) {
+        const userData =
+          userSnapshot.data();
+
+        firestoreRole =
+          userData.role ||
+          null;
+
+        firestoreName =
+          userData.name ||
+          null;
+      }
+    } catch (error) {
+      console.warn(
+        "Unable to load Firestore user profile:",
+        error,
+      );
+    }
+
+    /*
+     * Existing cached role.
+     */
+    const cachedRole =
       localStorage.getItem(
-        `comlab-role-email-${(firebaseUser.email || "").trim().toLowerCase()}`,
+        `comlab-role-${firebaseUser.uid}`,
       ) ||
-      "Working",
-  );
+      localStorage.getItem(
+        `comlab-role-email-${normalizedEmail}`,
+      );
 
-  const normalizedEmail = (firebaseUser.email || "").trim().toLowerCase();
-  const profileName = firebaseUser.displayName || "New User";
+    const existingRole =
+      roleOverride ||
+      firestoreRole ||
+      cachedRole ||
+      "Administrator";
 
-  persistRoleCache(firebaseUser, desiredRole);
+    const desiredRole =
+      normalizeAccountRole(
+        existingRole,
+        normalizedEmail,
+      );
 
-  return {
-    uid: firebaseUser.uid,
-    name: profileName,
-    email: normalizedEmail,
-    role: desiredRole,
-    updatedAt: new Date().toISOString(),
+    const profileName =
+      firestoreName ||
+      firebaseUser.displayName ||
+      "Administrator";
+
+    persistRoleCache(
+      firebaseUser,
+      desiredRole,
+    );
+
+    return {
+      uid: firebaseUser.uid,
+      username:
+        normalizedEmail,
+      name: profileName,
+      email:
+        normalizedEmail,
+      role: desiredRole,
+      updatedAt:
+        new Date().toISOString(),
+    };
   };
-};
 
-export const logoutUser = async () => {
-  return await signOut(auth);
-};
+export const logoutUser =
+  async () => {
+    return await signOut(auth);
+  };
 
-export const listenToAuth = (callback) => {
-  return onAuthStateChanged(auth, callback);
+export const listenToAuth = (
+  callback,
+) => {
+  return onAuthStateChanged(
+    auth,
+    callback,
+  );
 };

@@ -1,0 +1,585 @@
+/* =========================================
+   FLOATING BUG BUTTON
+========================================= */
+
+.bug-report-floating-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1100;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  height: 42px;
+  padding: 0 15px;
+
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    #fbbf24,
+    #f97316
+  );
+
+  color: #111111;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(245, 158, 11, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.bug-report-floating-button:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.38),
+    0 0 20px rgba(245, 158, 11, 0.12);
+}
+
+.bug-report-floating-button:active {
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   OVERLAY
+========================================= */
+
+.bug-report-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.62);
+
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  animation: bugReportOverlayIn 0.2s ease;
+}
+
+/* =========================================
+   MODAL
+========================================= */
+
+.bug-report-modal {
+  width: 100%;
+  max-width: 500px;
+
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(24, 24, 24, 0.98),
+      rgba(12, 12, 12, 0.98)
+    );
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(245, 158, 11, 0.04);
+
+  overflow: hidden;
+
+  animation: bugReportModalIn 0.22s ease;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.bug-report-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  background: rgba(245, 158, 11, 0.025);
+}
+
+.bug-report-modal-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bug-report-modal-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 11px;
+
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.bug-report-modal-heading span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #f59e0b;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bug-report-modal-heading h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.bug-report-close {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #999999;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.bug-report-close:hover {
+  color: #ffffff;
+
+  border-color: rgba(245, 158, 11, 0.3);
+
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.bug-report-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   FORM
+========================================= */
+
+.bug-report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  padding: 20px;
+}
+
+.bug-report-field {
+  position: relative;
+}
+
+.bug-report-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #dddddd;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.bug-report-field textarea {
+  width: 100%;
+  min-height: 150px;
+
+  resize: vertical;
+
+  padding: 13px 14px 30px;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-radius: 11px;
+
+  outline: none;
+
+  background: #0b0b0b;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.6;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.bug-report-field textarea:focus {
+  border-color: rgba(245, 158, 11, 0.45);
+
+  box-shadow:
+    0 0 0 3px rgba(245, 158, 11, 0.06);
+}
+
+.bug-report-field textarea::placeholder {
+  color: #555555;
+}
+
+.bug-report-field textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bug-report-counter {
+  position: absolute;
+  right: 12px;
+  bottom: 9px;
+
+  color: #555555;
+
+  font-size: 8px;
+}
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+.bug-report-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 12px;
+
+  border-radius: 9px;
+
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.bug-report-message.error {
+  border: 1px solid rgba(248, 113, 113, 0.2);
+
+  background: rgba(248, 113, 113, 0.07);
+
+  color: #fca5a5;
+}
+
+.bug-report-message.success {
+  border: 1px solid rgba(74, 222, 128, 0.2);
+
+  background: rgba(74, 222, 128, 0.07);
+
+  color: #86efac;
+}
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.bug-report-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bug-report-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bug-report-clear,
+.bug-report-cancel,
+.bug-report-submit {
+  height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 0 13px;
+
+  border-radius: 9px;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.bug-report-clear {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: transparent;
+
+  color: #888888;
+}
+
+.bug-report-clear:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.15);
+
+  background: rgba(255, 255, 255, 0.03);
+
+  color: #dddddd;
+}
+
+.bug-report-cancel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: transparent;
+
+  color: #999999;
+}
+
+.bug-report-cancel:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.15);
+
+  color: #ffffff;
+}
+
+.bug-report-submit {
+  border: 1px solid rgba(245, 158, 11, 0.2);
+
+  background: linear-gradient(
+    135deg,
+    #fbbf24,
+    #f97316
+  );
+
+  color: #111111;
+}
+
+.bug-report-submit:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.15);
+
+  transform: translateY(-1px);
+}
+
+.bug-report-clear:disabled,
+.bug-report-cancel:disabled,
+.bug-report-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   LIGHT MODE
+========================================= */
+
+html[data-theme="light"] .bug-report-modal,
+.light-mode .bug-report-modal {
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #faf9f7
+    );
+
+  border-color: rgba(217, 119, 6, 0.18);
+
+  box-shadow:
+    0 25px 70px rgba(70, 45, 20, 0.18);
+}
+
+html[data-theme="light"] .bug-report-modal-header,
+.light-mode .bug-report-modal-header {
+  border-bottom-color: rgba(60, 40, 20, 0.08);
+
+  background: rgba(245, 158, 11, 0.035);
+}
+
+html[data-theme="light"] .bug-report-modal-heading h2,
+.light-mode .bug-report-modal-heading h2 {
+  color: #2b2116;
+}
+
+html[data-theme="light"] .bug-report-close,
+.light-mode .bug-report-close {
+  border-color: rgba(60, 40, 20, 0.1);
+
+  color: #806f5e;
+}
+
+html[data-theme="light"] .bug-report-close:hover,
+.light-mode .bug-report-close:hover {
+  color: #2b2116;
+
+  border-color: rgba(217, 119, 6, 0.25);
+
+  background: rgba(245, 158, 11, 0.06);
+}
+
+html[data-theme="light"] .bug-report-field label,
+.light-mode .bug-report-field label {
+  color: #493a2c;
+}
+
+html[data-theme="light"] .bug-report-field textarea,
+.light-mode .bug-report-field textarea {
+  border-color: rgba(120, 90, 55, 0.16);
+
+  background: #ffffff;
+
+  color: #2b2116;
+}
+
+html[data-theme="light"] .bug-report-field textarea::placeholder,
+.light-mode .bug-report-field textarea::placeholder {
+  color: #9b8b7b;
+}
+
+html[data-theme="light"] .bug-report-clear,
+.light-mode .bug-report-clear,
+html[data-theme="light"] .bug-report-cancel,
+.light-mode .bug-report-cancel {
+  border-color: rgba(60, 40, 20, 0.1);
+
+  color: #806f5e;
+}
+
+html[data-theme="light"] .bug-report-clear:hover:not(:disabled),
+.light-mode .bug-report-clear:hover:not(:disabled),
+html[data-theme="light"] .bug-report-cancel:hover:not(:disabled),
+.light-mode .bug-report-cancel:hover:not(:disabled) {
+  background: rgba(60, 40, 20, 0.04);
+
+  color: #2b2116;
+}
+
+/* =========================================
+   ANIMATION
+========================================= */
+
+@keyframes bugReportOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bugReportModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 600px) {
+  .bug-report-floating-button {
+    right: 16px;
+    bottom: 16px;
+
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
+
+    border-radius: 50%;
+  }
+
+  .bug-report-floating-button span {
+    display: none;
+  }
+
+  .bug-report-overlay {
+    align-items: flex-end;
+
+    padding: 12px;
+  }
+
+  .bug-report-modal {
+    max-width: none;
+
+    border-radius: 16px;
+  }
+
+  .bug-report-modal-header {
+    padding: 16px;
+  }
+
+  .bug-report-form {
+    padding: 16px;
+  }
+
+  .bug-report-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bug-report-right-actions {
+    width: 100%;
+  }
+
+  .bug-report-cancel,
+  .bug-report-submit {
+    flex: 1;
+  }
+}

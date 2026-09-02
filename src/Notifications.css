@@ -1,8 +1,20 @@
+/* =========================================
+   NOTIFICATIONS PAGE
+========================================= */
+
 .notifications-page {
   height: 100vh;
   display: flex;
   overflow: hidden;
-  background: radial-gradient(circle at top, rgba(245, 158, 11, 0.12), transparent 26%), #080808;
+
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(245, 158, 11, 0.12),
+      transparent 26%
+    ),
+    #080808;
+
   color: #ffffff;
 }
 
@@ -10,7 +22,9 @@
   width: calc(100% - 280px);
   min-width: 0;
   margin-left: 280px;
+
   height: 100vh;
+
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -20,108 +34,221 @@
   box-sizing: border-box;
 }
 
+/* =========================================
+   NOTIFICATIONS PANEL
+========================================= */
+
 .notifications-panel {
-  background: linear-gradient(180deg, rgba(18, 18, 18, 0.9), rgba(12, 12, 12, 0.8));
-  border: 1px solid rgba(245, 158, 11, 0.12);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(18, 18, 18, 0.9),
+      rgba(12, 12, 12, 0.8)
+    );
+
+  border: 1px solid
+    rgba(245, 158, 11, 0.12);
+
   border-radius: 18px;
+
   padding: 24px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+
+  box-shadow:
+    0 18px 40px
+      rgba(0, 0, 0, 0.18);
 }
 
+/* =========================================
+   HEADER
+========================================= */
 
 .notifications-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 16px;
+
   margin-bottom: 18px;
 }
 
 .section-tag {
   display: inline-block;
+
   color: #f59e0b;
+
   font-size: 10px;
+
   letter-spacing: 0.12em;
+
   font-weight: 700;
+
   margin-bottom: 8px;
 }
 
 .notifications-header h2 {
   margin: 0;
-  font-size: clamp(1.4rem, 2vw, 2rem);
+
+  color: #ffffff;
+
+  font-size:
+    clamp(1.4rem, 2vw, 2rem);
 }
+
+/* =========================================
+   NOTIFICATION COUNT
+========================================= */
 
 .notifications-count {
   display: inline-flex;
   align-items: center;
+
   gap: 8px;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+
+  background:
+    rgba(245, 158, 11, 0.1);
+
+  border: 1px solid
+    rgba(245, 158, 11, 0.2);
+
   color: #fbbf24;
+
   border-radius: 999px;
+
   padding: 8px 12px;
+
   font-size: 12px;
+
   font-weight: 700;
 }
+
+/* =========================================
+   SEARCH
+========================================= */
 
 .notification-search-wrap {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 12px;
+
   margin-bottom: 18px;
 }
 
 .notification-search {
   display: flex;
   align-items: center;
+
   gap: 8px;
+
   width: min(420px, 100%);
+
   padding: 0 12px;
+
   height: 42px;
+
   border-radius: 10px;
+
   border: 1px solid #242424;
+
   background: #0b0b0b;
+
   color: #6b7280;
+}
+
+.notification-search:focus-within {
+  border-color:
+    rgba(245, 158, 11, 0.4);
+
+  color: #f59e0b;
 }
 
 .notification-search input {
   width: 100%;
+
   border: none;
   outline: none;
+
   background: transparent;
+
   color: #ffffff;
+
   font-size: 12px;
 }
 
+.notification-search input::placeholder {
+  color: #555555;
+}
+
+/* =========================================
+   NOTIFICATION LIST
+========================================= */
 
 .notification-list {
   display: grid;
+
   gap: 14px;
 }
 
+/* =========================================
+   DATE GROUP
+========================================= */
+
 .notification-date-group {
-  border: 1px solid rgba(245, 158, 11, 0.08);
+  border: 1px solid
+    rgba(245, 158, 11, 0.08);
+
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
+
+  background:
+    rgba(255, 255, 255, 0.02);
+
   overflow: hidden;
 }
 
+/* =========================================
+   DATE TOGGLE
+========================================= */
+
 .notification-date-toggle {
   width: 100%;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 10px;
+
   border: none;
-  background: rgba(245, 158, 11, 0.06);
+
+  background:
+    rgba(245, 158, 11, 0.06);
+
   color: #f8d9a1;
+
   padding: 12px 16px;
+
   font-size: 0.82rem;
+
   font-weight: 700;
+
   letter-spacing: 0.04em;
+
   text-transform: uppercase;
+
   cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.notification-date-toggle:hover {
+  background:
+    rgba(245, 158, 11, 0.1);
+
+  color: #ffffff;
 }
 
 .notification-date-toggle span:first-child {
@@ -130,21 +257,33 @@
 
 .notification-date-toggle span:nth-child(2) {
   display: inline-flex;
+
   align-items: center;
   justify-content: center;
+
   min-width: 22px;
+
   padding: 2px 7px;
+
   border-radius: 999px;
-  background: rgba(245, 158, 11, 0.12);
+
+  background:
+    rgba(245, 158, 11, 0.12);
+
   color: #fbbf24;
 }
 
 .toggle-indicator {
   display: inline-flex;
+
   align-items: center;
   justify-content: center;
+
   transform: rotate(0deg);
-  transition: transform 0.2s ease;
+
+  transition:
+    transform 0.2s ease;
+
   font-size: 1rem;
 }
 
@@ -152,87 +291,143 @@
   transform: rotate(180deg);
 }
 
+/* =========================================
+   DATE ITEMS
+========================================= */
+
 .notification-date-items {
   display: grid;
+
   gap: 12px;
+
   padding: 12px;
 }
 
+/* =========================================
+   NOTIFICATION CARD
+========================================= */
+
 .notification-card {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
+
+  grid-template-columns:
+    46px minmax(0, 1fr);
+
   align-items: center;
+
   gap: 14px;
+
   padding: 16px;
+
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(245, 158, 11, 0.08);
+
+  background:
+    rgba(255, 255, 255, 0.02);
+
+  border: 1px solid
+    rgba(245, 158, 11, 0.08);
 }
 
 .notification-card.warning {
-  border-color: rgba(251, 191, 36, 0.2);
+  border-color:
+    rgba(251, 191, 36, 0.2);
 }
 
 .notification-card.timeout {
-  border-color: rgba(249, 115, 22, 0.2);
+  border-color:
+    rgba(249, 115, 22, 0.2);
 }
 
 .notification-card.checkin,
 .notification-card.info,
 .notification-card.absence {
-  border-color: rgba(96, 165, 250, 0.18);
+  border-color:
+    rgba(96, 165, 250, 0.18);
 }
+
+/* =========================================
+   NOTIFICATION ICON
+========================================= */
 
 .notification-card-icon {
   width: 46px;
   height: 46px;
+
   display: flex;
+
   align-items: center;
   justify-content: center;
+
   border-radius: 12px;
-  background: rgba(245, 158, 11, 0.12);
+
+  background:
+    rgba(245, 158, 11, 0.12);
+
   color: #fbbf24;
 }
 
-.notification-card.timeout .notification-card-icon {
-  background: rgba(249, 115, 22, 0.14);
+.notification-card.timeout
+.notification-card-icon {
+  background:
+    rgba(249, 115, 22, 0.14);
+
   color: #fb923c;
 }
 
-.notification-card.checkin .notification-card-icon,
-.notification-card.info .notification-card-icon {
-  background: rgba(59, 130, 246, 0.12);
+.notification-card.checkin
+.notification-card-icon,
+.notification-card.info
+.notification-card-icon {
+  background:
+    rgba(59, 130, 246, 0.12);
+
   color: #60a5fa;
 }
 
-.notification-card.absence .notification-card-icon {
-  background: rgba(239, 68, 68, 0.12);
+.notification-card.absence
+.notification-card-icon {
+  background:
+    rgba(239, 68, 68, 0.12);
+
   color: #f87171;
 }
 
+/* =========================================
+   NOTIFICATION CONTENT
+========================================= */
+
 .notification-card-top {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
+
   gap: 12px;
+
   margin-bottom: 6px;
 }
 
 .notification-card-top strong {
   color: #ffffff;
+
   font-size: 0.95rem;
 }
 
 .notification-card-top span {
   color: #fbbf24;
+
   font-size: 11px;
+
   font-weight: 700;
 }
 
 .notification-card p {
   margin: 0;
+
   color: #bdbdbd;
+
   font-size: 0.82rem;
+
   line-height: 1.5;
 }
 
@@ -240,54 +435,352 @@
   display: none;
 }
 
+/* =========================================
+   EMPTY STATE
+========================================= */
+
 .empty-state {
   min-height: 250px;
+
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 10px;
+
   color: #7d7d7d;
-  border: 1px dashed rgba(245, 158, 11, 0.12);
+
+  border: 1px dashed
+    rgba(245, 158, 11, 0.12);
+
   border-radius: 16px;
+
   text-align: center;
+
   padding: 24px;
 }
 
 .empty-state h3 {
   margin: 0;
+
   color: #ffffff;
 }
 
 .empty-state p {
   margin: 0;
+
   max-width: 360px;
+
+  color: #7d7d7d;
 }
+
+/* =========================================
+   LIGHT MODE
+========================================= */
+
+html[data-theme="light"] .notifications-page {
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(245, 158, 11, 0.08),
+      transparent 26%
+    ),
+    #f5f5f5;
+
+  color: #171717;
+}
+
+html[data-theme="light"] .notifications-main {
+  background: #f5f5f5;
+}
+
+html[data-theme="light"] .notifications-panel {
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #fafafa
+    );
+
+  border-color:
+    rgba(245, 158, 11, 0.18);
+
+  box-shadow:
+    0 18px 40px
+      rgba(0, 0, 0, 0.06);
+}
+
+/* =========================================
+   LIGHT MODE - HEADER
+========================================= */
+
+html[data-theme="light"] .notifications-header h2 {
+  color: #171717;
+}
+
+html[data-theme="light"] .section-tag {
+  color: #d97706;
+}
+
+html[data-theme="light"] .notifications-count {
+  background:
+    rgba(245, 158, 11, 0.08);
+
+  border-color:
+    rgba(245, 158, 11, 0.22);
+
+  color: #b45309;
+}
+
+/* =========================================
+   LIGHT MODE - SEARCH
+========================================= */
+
+html[data-theme="light"] .notification-search {
+  background: #ffffff;
+
+  border-color: #dddddd;
+
+  color: #777777;
+
+  box-shadow:
+    0 4px 12px
+      rgba(0, 0, 0, 0.03);
+}
+
+html[data-theme="light"] .notification-search:focus-within {
+  border-color:
+    rgba(245, 158, 11, 0.5);
+
+  color: #d97706;
+}
+
+html[data-theme="light"] .notification-search input {
+  color: #222222;
+}
+
+html[data-theme="light"]
+.notification-search input::placeholder {
+  color: #999999;
+}
+
+/* =========================================
+   LIGHT MODE - DATE GROUP
+========================================= */
+
+html[data-theme="light"] .notification-date-group {
+  background: #ffffff;
+
+  border-color:
+    rgba(245, 158, 11, 0.15);
+
+  box-shadow:
+    0 6px 18px
+      rgba(0, 0, 0, 0.035);
+}
+
+/* =========================================
+   LIGHT MODE - DATE TOGGLE
+========================================= */
+
+html[data-theme="light"] .notification-date-toggle {
+  background:
+    rgba(245, 158, 11, 0.08);
+
+  color: #92400e;
+
+  border-bottom: 1px solid
+    rgba(245, 158, 11, 0.12);
+}
+
+html[data-theme="light"] .notification-date-toggle:hover {
+  background:
+    rgba(245, 158, 11, 0.13);
+
+  color: #78350f;
+}
+
+html[data-theme="light"]
+.notification-date-toggle
+span:first-child {
+  color: #78350f;
+}
+
+html[data-theme="light"]
+.notification-date-toggle
+span:nth-child(2) {
+  background:
+    rgba(245, 158, 11, 0.15);
+
+  color: #b45309;
+}
+
+html[data-theme="light"] .toggle-indicator {
+  color: #92400e;
+}
+
+/* =========================================
+   LIGHT MODE - DATE ITEMS
+========================================= */
+
+html[data-theme="light"] .notification-date-items {
+  background: #ffffff;
+}
+
+/* =========================================
+   LIGHT MODE - NOTIFICATION CARD
+========================================= */
+
+html[data-theme="light"] .notification-card {
+  background: #fafafa;
+
+  border-color:
+    rgba(245, 158, 11, 0.12);
+
+  box-shadow:
+    0 4px 12px
+      rgba(0, 0, 0, 0.025);
+}
+
+html[data-theme="light"] .notification-card.warning {
+  border-color:
+    rgba(217, 119, 6, 0.25);
+}
+
+html[data-theme="light"] .notification-card.timeout {
+  border-color:
+    rgba(234, 88, 12, 0.25);
+}
+
+html[data-theme="light"] .notification-card.checkin,
+html[data-theme="light"] .notification-card.info {
+  border-color:
+    rgba(37, 99, 235, 0.2);
+}
+
+html[data-theme="light"] .notification-card.absence {
+  border-color:
+    rgba(220, 38, 38, 0.2);
+}
+
+/* =========================================
+   LIGHT MODE - ICONS
+========================================= */
+
+html[data-theme="light"] .notification-card-icon {
+  background:
+    rgba(245, 158, 11, 0.12);
+
+  color: #b45309;
+}
+
+html[data-theme="light"]
+.notification-card.timeout
+.notification-card-icon {
+  background:
+    rgba(249, 115, 22, 0.12);
+
+  color: #c2410c;
+}
+
+html[data-theme="light"]
+.notification-card.checkin
+.notification-card-icon,
+html[data-theme="light"]
+.notification-card.info
+.notification-card-icon {
+  background:
+    rgba(59, 130, 246, 0.1);
+
+  color: #2563eb;
+}
+
+html[data-theme="light"]
+.notification-card.absence
+.notification-card-icon {
+  background:
+    rgba(239, 68, 68, 0.1);
+
+  color: #dc2626;
+}
+
+/* =========================================
+   LIGHT MODE - CARD TEXT
+========================================= */
+
+html[data-theme="light"]
+.notification-card-top strong {
+  color: #222222;
+}
+
+html[data-theme="light"]
+.notification-card-top span {
+  color: #b45309;
+}
+
+html[data-theme="light"]
+.notification-card p {
+  color: #555555;
+}
+
+/* =========================================
+   LIGHT MODE - EMPTY STATE
+========================================= */
+
+html[data-theme="light"] .empty-state {
+  color: #666666;
+
+  border-color:
+    rgba(245, 158, 11, 0.2);
+
+  background:
+    rgba(255, 255, 255, 0.5);
+}
+
+html[data-theme="light"] .empty-state h3 {
+  color: #222222;
+}
+
+html[data-theme="light"] .empty-state p {
+  color: #666666;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
 
 @media (max-width: 850px) {
   .notifications-main {
     width: 100%;
+
     margin-left: 0;
   }
 
   .notifications-content {
-    padding: 25px 20px 40px;
+    padding:
+      25px 20px 40px;
   }
-
 }
 
 @media (max-width: 600px) {
   .notifications-panel {
-    padding: 18px 16px;
+    padding:
+      18px 16px;
   }
 
   .notifications-header {
     flex-direction: column;
+
     align-items: flex-start;
   }
 
   .notification-search-wrap {
     flex-direction: column;
+
     align-items: stretch;
   }
 
@@ -297,6 +790,7 @@
 
   .notification-card {
     grid-template-columns: 1fr;
+
     align-items: flex-start;
   }
 
@@ -304,4 +798,10 @@
     justify-content: flex-start;
   }
 
+  .notification-date-toggle {
+    padding:
+      11px 12px;
+
+    font-size: 0.75rem;
+  }
 }

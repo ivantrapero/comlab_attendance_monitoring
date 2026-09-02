@@ -9,7 +9,9 @@ import {
   Sun,
   PanelLeftClose,
   PanelLeftOpen,
+  Bug,
 } from "lucide-react";
+
 import { useState } from "react";
 
 import "./Sidebar.css";
@@ -22,10 +24,12 @@ function Sidebar({
   sidebarOpen = false,
 }) {
   const [isCollapsed, setIsCollapsed] = useState(
-    () => localStorage.getItem("comlab-sidebar-collapsed") === "true",
+    () =>
+      localStorage.getItem("comlab-sidebar-collapsed") === "true"
   );
+
   const [isLightMode, setIsLightMode] = useState(
-    () => document.documentElement.dataset.theme === "light",
+    () => document.documentElement.dataset.theme === "light"
   );
 
   const navigate = (page) => {
@@ -34,33 +38,108 @@ function Sidebar({
     }
   };
 
+  /* =========================================
+     THEME
+  ========================================= */
+
   const toggleTheme = () => {
     const nextTheme = isLightMode ? "dark" : "light";
 
     document.documentElement.dataset.theme = nextTheme;
     localStorage.setItem("comlab-theme", nextTheme);
+
     setIsLightMode(nextTheme === "light");
   };
+
+  /* =========================================
+     SIDEBAR COLLAPSE
+  ========================================= */
 
   const toggleSidebar = () => {
     const nextCollapsed = !isCollapsed;
 
-    localStorage.setItem("comlab-sidebar-collapsed", String(nextCollapsed));
+    localStorage.setItem(
+      "comlab-sidebar-collapsed",
+      String(nextCollapsed)
+    );
+
     setIsCollapsed(nextCollapsed);
   };
 
-  const isAdmin = String(user?.role || "Working").trim().toLowerCase() === "administrator" || String(user?.role || "Working").trim().toLowerCase() === "admin";
-  const allowedPages = isAdmin
-    ? ["dashboard", "attendance", "reports", "notifications", "settings"]
-    : ["dashboard", "attendance", "reports", "settings"];
+  /* =========================================
+     USER ROLE
+  ========================================= */
 
-  const navigationItems = [
-    { page: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { page: "attendance", label: "Attendance", icon: ClipboardCheck },
-    { page: "reports", label: "Reports", icon: FileText },
-    { page: "notifications", label: "Notifications", icon: Bell },
-    { page: "settings", label: "Settings", icon: Settings },
-  ].filter((item) => allowedPages.includes(item.page));
+  const role = String(user?.role || "administrator")
+    .trim()
+    .toLowerCase();
+
+  const isDeveloper = role === "developer";
+
+  /* =========================================
+     NAVIGATION
+  ========================================= */
+
+  const navigationItems = isDeveloper
+    ? [
+        {
+          page: "dashboard",
+          label: "Dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          page: "attendance",
+          label: "Attendance",
+          icon: ClipboardCheck,
+        },
+        {
+          page: "reports",
+          label: "Reports",
+          icon: FileText,
+        },
+        {
+          page: "notifications",
+          label: "Notifications",
+          icon: Bell,
+        },
+        {
+          page: "developer-board",
+          label: "Bug Board",
+          icon: Bug,
+        },
+        {
+          page: "settings",
+          label: "Settings",
+          icon: Settings,
+        },
+      ]
+    : [
+        {
+          page: "dashboard",
+          label: "Dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          page: "attendance",
+          label: "Attendance",
+          icon: ClipboardCheck,
+        },
+        {
+          page: "reports",
+          label: "Reports",
+          icon: FileText,
+        },
+        {
+          page: "notifications",
+          label: "Notifications",
+          icon: Bell,
+        },
+        {
+          page: "settings",
+          label: "Settings",
+          icon: Settings,
+        },
+      ];
 
   return (
     <aside
@@ -68,37 +147,57 @@ function Sidebar({
         isCollapsed ? "sidebar-collapsed" : ""
       } ${sidebarOpen ? "sidebar-open" : ""}`}
     >
-      {/* BRAND */}
-      {/* NAVIGATION */}
+      {/* =====================================
+          NAVIGATION
+      ===================================== */}
+
       <nav className="sidebar-nav">
         <p className="nav-title">MAIN MENU</p>
 
-        {navigationItems.map(({ page, label, icon: Icon }) => (
-          <button
-            key={page}
-            type="button"
-            className={`nav-item ${
-              currentPage === page ? "active" : ""
-            }`}
-            onClick={() => navigate(page)}
-          >
-            <Icon size={18} />
-            <span>{label}</span>
-          </button>
-        ))}
+        {navigationItems.map(
+          ({ page, label, icon: Icon }) => (
+            <button
+              key={page}
+              type="button"
+              className={`nav-item ${
+                currentPage === page ? "active" : ""
+              }`}
+              onClick={() => navigate(page)}
+            >
+              <Icon size={18} />
+
+              <span>{label}</span>
+            </button>
+          )
+        )}
       </nav>
 
-      {/* USER / LOGOUT */}
+      {/* =====================================
+          SIDEBAR BOTTOM
+      ===================================== */}
+
       <div className="sidebar-bottom">
+        {/* THEME BUTTON */}
+
         <button
           type="button"
           className="theme-toggle-button"
           onClick={toggleTheme}
-          aria-label={`Switch to ${isLightMode ? "dark" : "light"} mode`}
-          title={`Switch to ${isLightMode ? "dark" : "light"} mode`}
+          aria-label={`Switch to ${
+            isLightMode ? "dark" : "light"
+          } mode`}
+          title={`Switch to ${
+            isLightMode ? "dark" : "light"
+          } mode`}
         >
-          {isLightMode ? <Moon size={18} /> : <Sun size={18} />}
+          {isLightMode ? (
+            <Moon size={18} />
+          ) : (
+            <Sun size={18} />
+          )}
         </button>
+
+        {/* USER */}
 
         <div className="sidebar-user">
           <div className="sidebar-user-avatar">
@@ -118,24 +217,40 @@ function Sidebar({
           </div>
         </div>
 
+        {/* LOGOUT */}
+
         <button
           type="button"
           className="logout-button"
           onClick={onLogout}
         >
           <LogOut size={17} />
+
           <span>Logout</span>
         </button>
+
+        {/* COLLAPSE */}
 
         <button
           type="button"
           className="sidebar-collapse-button"
           onClick={toggleSidebar}
-          aria-label={`${isCollapsed ? "Expand" : "Collapse"} sidebar`}
-          title={`${isCollapsed ? "Expand" : "Collapse"} sidebar`}
+          aria-label={`${
+            isCollapsed ? "Expand" : "Collapse"
+          } sidebar`}
+          title={`${
+            isCollapsed ? "Expand" : "Collapse"
+          } sidebar`}
         >
-          {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-          <span>{isCollapsed ? "Expand" : "Collapse"}</span>
+          {isCollapsed ? (
+            <PanelLeftOpen size={18} />
+          ) : (
+            <PanelLeftClose size={18} />
+          )}
+
+          <span>
+            {isCollapsed ? "Expand" : "Collapse"}
+          </span>
         </button>
       </div>
     </aside>

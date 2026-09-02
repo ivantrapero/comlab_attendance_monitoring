@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import Sidebar from "./Sidebar";
+import BugReportButton from "./BugReportButton";
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -295,6 +296,7 @@ function Reports({ user, onLogout, onNavigate }) {
     }
 
     const doc = new jsPDF();
+
     const pageTitle = selectedMonth
       ? `Attendance Report - ${reportMonthLabel}`
       : "Attendance Report";
@@ -303,34 +305,68 @@ function Reports({ user, onLogout, onNavigate }) {
     doc.text(pageTitle, 14, 18);
 
     doc.setFontSize(10);
+
     doc.text(
-      `Generated: ${new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}`,
+      `Generated: ${new Date().toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }
+      )}`,
       14,
       26
     );
 
-    const rows = filteredRecords.map((record) => [
-      formatDate(record),
-      record.instructor || "",
-      record.subject || "",
-      record.timeIn || "",
-      record.timeOut || "",
-      record.status || "",
-      record.reason || "",
-    ]);
+    const rows = filteredRecords.map(
+      (record) => [
+        formatDate(record),
+        record.instructor || "",
+        record.subject || "",
+        record.timeIn || "",
+        record.timeOut || "",
+        record.status || "",
+        record.reason || "",
+      ]
+    );
 
     autoTable(doc, {
-      head: [["Date", "Instructor", "Subject", "Time In", "Time Out", "Status", "Remarks"]],
+      head: [
+        [
+          "Date",
+          "Instructor",
+          "Subject",
+          "Time In",
+          "Time Out",
+          "Status",
+          "Remarks",
+        ],
+      ],
+
       body: rows,
+
       startY: 32,
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [245, 158, 11], textColor: [30, 30, 30], fontStyle: "bold" },
-      alternateRowStyles: { fillColor: [255, 247, 225] },
-      margin: { left: 14, right: 14 },
+
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+      },
+
+      headStyles: {
+        fillColor: [245, 158, 11],
+        textColor: [30, 30, 30],
+        fontStyle: "bold",
+      },
+
+      alternateRowStyles: {
+        fillColor: [255, 247, 225],
+      },
+
+      margin: {
+        left: 14,
+        right: 14,
+      },
     });
 
     const fileName = selectedMonth
@@ -359,9 +395,12 @@ function Reports({ user, onLogout, onNavigate }) {
     );
 
     while (
-      current.getFullYear() < currentDate.getFullYear() ||
-      (current.getFullYear() === currentDate.getFullYear() &&
-        current.getMonth() <= currentDate.getMonth())
+      current.getFullYear() <
+        currentDate.getFullYear() ||
+      (current.getFullYear() ===
+        currentDate.getFullYear() &&
+        current.getMonth() <=
+          currentDate.getMonth())
     ) {
       const value = `${current.getFullYear()}-${String(
         current.getMonth() + 1
@@ -369,10 +408,13 @@ function Reports({ user, onLogout, onNavigate }) {
 
       options.push({
         value,
-        label: current.toLocaleString("en-US", {
-          month: "long",
-          year: "numeric",
-        }),
+        label: current.toLocaleString(
+          "en-US",
+          {
+            month: "long",
+            year: "numeric",
+          }
+        ),
       });
 
       current = new Date(
@@ -386,7 +428,9 @@ function Reports({ user, onLogout, onNavigate }) {
   }, []);
 
   const reportMonthLabel = selectedMonth
-    ? new Date(`${selectedMonth}-01T00:00:00`).toLocaleString("en-US", {
+    ? new Date(
+        `${selectedMonth}-01T00:00:00`
+      ).toLocaleString("en-US", {
         month: "long",
         year: "numeric",
       })
@@ -394,6 +438,12 @@ function Reports({ user, onLogout, onNavigate }) {
 
   return (
     <div className="reports-page">
+
+      {/* =========================
+          REPORT BUG
+      ========================= */}
+
+      <BugReportButton user={user} />
 
       <Sidebar
         user={user}
@@ -451,12 +501,13 @@ function Reports({ user, onLogout, onNavigate }) {
                     "Administrator"}
                 </strong>
 
-                <span>Online</span>
+                <span>
+                  Online
+                </span>
 
               </div>
 
             </div>
-
           </div>
 
         </header>
@@ -481,8 +532,12 @@ function Reports({ user, onLogout, onNavigate }) {
 
           </section>
 
+          {/* MONTH FILTER */}
+
           <div className="report-filter-card month-filter-card">
+
             <div className="report-filter full-width">
+
               <label htmlFor="monthFilter">
                 Select Month
               </label>
@@ -491,44 +546,73 @@ function Reports({ user, onLogout, onNavigate }) {
                 id="monthFilter"
                 value={selectedMonth}
                 onChange={(e) =>
-                  setSelectedMonth(e.target.value)
+                  setSelectedMonth(
+                    e.target.value
+                  )
                 }
               >
-                <option value="">All Months</option>
-                {monthOptions.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                  >
-                    {option.label}
-                  </option>
-                ))}
+                <option value="">
+                  All Months
+                </option>
+
+                {monthOptions.map(
+                  (option) => (
+                    <option
+                      key={
+                        option.value
+                      }
+                      value={
+                        option.value
+                      }
+                    >
+                      {option.label}
+                    </option>
+                  )
+                )}
               </select>
+
             </div>
 
             <button
               type="button"
               className="clear-filter"
-              onClick={() => setSelectedMonth("")}
+              onClick={() =>
+                setSelectedMonth("")
+              }
             >
               All Months
             </button>
+
           </div>
 
+          {/* EXPORT ACTIONS */}
+
           <div className="report-actions-row">
+
             <div className="report-month-banner">
+
               <CalendarDays size={16} />
-              <span>Generating report for: {reportMonthLabel}</span>
+
+              <span>
+                Generating report for:{" "}
+                {reportMonthLabel}
+              </span>
+
             </div>
 
             <div className="export-actions">
+
               <button
                 type="button"
                 className="export-button"
                 onClick={exportExcel}
-                disabled={filteredRecords.length === 0}
+                disabled={
+                  filteredRecords.length ===
+                  0
+                }
               >
                 <Download size={17} />
+
                 Export Excel
               </button>
 
@@ -536,89 +620,155 @@ function Reports({ user, onLogout, onNavigate }) {
                 type="button"
                 className="export-button secondary"
                 onClick={exportPdf}
-                disabled={filteredRecords.length === 0}
+                disabled={
+                  filteredRecords.length ===
+                  0
+                }
               >
                 <FileText size={17} />
+
                 Export PDF
               </button>
+
             </div>
+
           </div>
 
+          {/* SUMMARY */}
+
           <section className="report-summary-card-panel">
+
             <div className="summary-header-row">
-              <h3>Monthly Summary</h3>
-              <span>{reportMonthLabel}</span>
+
+              <h3>
+                Monthly Summary
+              </h3>
+
+              <span>
+                {reportMonthLabel}
+              </span>
+
             </div>
 
             <div className="report-summary">
+
               <div className="report-summary-card summary-card highlight">
+
                 <div className="report-icon">
                   <BarChart3 size={18} />
                 </div>
+
                 <div>
-                  <span>Total Records</span>
-                  <strong>{totalRecords}</strong>
+                  <span>
+                    Total Records
+                  </span>
+
+                  <strong>
+                    {totalRecords}
+                  </strong>
                 </div>
+
               </div>
 
               <div className="report-summary-card summary-card">
+
                 <div className="report-icon">
                   <span className="status-dot present-dot" />
                 </div>
+
                 <div>
-                  <span>Present</span>
-                  <strong>{present}</strong>
+                  <span>
+                    Present
+                  </span>
+
+                  <strong>
+                    {present}
+                  </strong>
                 </div>
+
               </div>
 
               <div className="report-summary-card summary-card">
+
                 <div className="report-icon">
                   <span className="status-dot late-dot" />
                 </div>
+
                 <div>
-                  <span>Late</span>
-                  <strong>{late}</strong>
+                  <span>
+                    Late
+                  </span>
+
+                  <strong>
+                    {late}
+                  </strong>
                 </div>
+
               </div>
 
               <div className="report-summary-card summary-card">
+
                 <div className="report-icon">
                   <span className="status-dot absent-dot" />
                 </div>
+
                 <div>
-                  <span>Absent</span>
-                  <strong>{absent}</strong>
+                  <span>
+                    Absent
+                  </span>
+
+                  <strong>
+                    {absent}
+                  </strong>
                 </div>
+
               </div>
 
               <div className="report-summary-card summary-card">
+
                 <div className="report-icon">
                   <span className="status-dot active-dot" />
                 </div>
+
                 <div>
-                  <span>Currently In</span>
-                  <strong>{currentlyIn}</strong>
+                  <span>
+                    Currently In
+                  </span>
+
+                  <strong>
+                    {currentlyIn}
+                  </strong>
                 </div>
+
               </div>
 
               <div className="report-summary-card summary-card">
+
                 <div className="report-icon">
                   <span className="status-dot rate-dot" />
                 </div>
+
                 <div>
-                  <span>Attendance Rate</span>
-                  <strong>{attendanceRate}%</strong>
+                  <span>
+                    Attendance Rate
+                  </span>
+
+                  <strong>
+                    {attendanceRate}%
+                  </strong>
                 </div>
+
               </div>
+
             </div>
+
           </section>
 
           {/* EXPORT INFO */}
+
           <div className="export-info">
 
-            <FileText
-              size={19}
-            />
+            <FileText size={19} />
 
             <div>
 
