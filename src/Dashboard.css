@@ -19,6 +19,30 @@
   height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
+
+  position: relative;
+}
+
+/* =========================================
+   TOPBAR BACKGROUND LAYER
+========================================= */
+
+.dashboard-main::before {
+  content: "";
+
+  position: fixed;
+
+  top: 0;
+  left: 280px;
+  right: 0;
+
+  height: 75px;
+
+  background: #080808;
+
+  z-index: 10;
+
+  pointer-events: none;
 }
 
 /* =========================================
@@ -1389,6 +1413,14 @@ html[data-theme="light"] .dashboard-main {
 }
 
 /* =========================================
+   LIGHT MODE - TOPBAR BACKGROUND LAYER
+========================================= */
+
+html[data-theme="light"] .dashboard-main::before {
+  background: #f5f5f5;
+}
+
+/* =========================================
    LIGHT MODE - TOPBAR
 ========================================= */
 
@@ -1421,7 +1453,6 @@ html[data-theme="light"] .dashboard .mobile-menu:hover {
   color: #d97706;
 }
 
-
 /* =========================================
    LIGHT MODE - WELCOME
 ========================================= */
@@ -1450,18 +1481,9 @@ html[data-theme="light"] .dashboard .welcome-section p {
   color: #666666;
 }
 
-
 /* =========================================
    LIGHT MODE - REALTIME CLOCK
 ========================================= */
-
-/* 
-   IMPORTANT FIX:
-   The original .welcome-time-panel strong
-   uses color: #ffffff.
-   This override changes ONLY the realtime
-   clock text in Light Mode.
-*/
 
 html[data-theme="light"] .dashboard .welcome-time-panel strong {
   color: #171717;
@@ -1482,7 +1504,6 @@ html[data-theme="light"] .dashboard .welcome-time-panel span {
 html[data-theme="light"] .dashboard .welcome-time-panel small {
   color: #666666;
 }
-
 
 /* =========================================
    LIGHT MODE - STATISTICS
@@ -1516,7 +1537,6 @@ html[data-theme="light"] .dashboard .stat-card small {
   color: #777777;
 }
 
-
 /* =========================================
    LIGHT MODE - SECTIONS
 ========================================= */
@@ -1528,7 +1548,6 @@ html[data-theme="light"] .dashboard .section-header h3 {
 html[data-theme="light"] .dashboard .section-header p {
   color: #666666;
 }
-
 
 /* =========================================
    LIGHT MODE - QUICK ACTIONS
@@ -1571,7 +1590,6 @@ html[data-theme="light"] .dashboard .quick-card:hover {
       rgba(0, 0, 0, 0.07);
 }
 
-
 /* =========================================
    LIGHT MODE - ATTENDANCE
 ========================================= */
@@ -1591,7 +1609,6 @@ html[data-theme="light"] .dashboard .attendance-section {
     0 10px 25px
       rgba(0, 0, 0, 0.05);
 }
-
 
 /* =========================================
    LIGHT MODE - SEARCH
@@ -1624,7 +1641,6 @@ html[data-theme="light"] .dashboard .date-display {
   color: #666666;
 }
 
-
 /* =========================================
    LIGHT MODE - TABLE
 ========================================= */
@@ -1641,7 +1657,6 @@ html[data-theme="light"] .dashboard .table-wrapper td {
   border-bottom-color: #eeeeee;
 }
 
-
 /* =========================================
    LIGHT MODE - TIME IN / TIME OUT
 ========================================= */
@@ -1652,7 +1667,6 @@ html[data-theme="light"] .dashboard .table-wrapper td:nth-child(4) {
 
   font-weight: 600;
 }
-
 
 /* =========================================
    LIGHT MODE - INSTRUCTOR
@@ -1668,7 +1682,6 @@ html[data-theme="light"] .dashboard .table-avatar {
   color: #d97706;
 }
 
-
 /* =========================================
    LIGHT MODE - NO TIMEOUT
 ========================================= */
@@ -1676,7 +1689,6 @@ html[data-theme="light"] .dashboard .table-avatar {
 html[data-theme="light"] .dashboard .no-timeout {
   color: #999999;
 }
-
 
 /* =========================================
    LIGHT MODE - STATUS
@@ -1705,7 +1717,6 @@ html[data-theme="light"] .dashboard .status.absent {
   color: #dc2626;
 }
 
-
 /* =========================================
    LIGHT MODE - TABLE HOVER
 ========================================= */
@@ -1717,7 +1728,6 @@ html[data-theme="light"] .dashboard .table-wrapper tbody tr:hover {
 html[data-theme="light"] .dashboard .no-records {
   color: #777777 !important;
 }
-
 
 /* =========================================
    LIGHT MODE - NOTIFICATION DRAWER
@@ -1771,7 +1781,6 @@ html[data-theme="light"] .dashboard .notification-close {
   border-color: #dddddd;
 }
 
-
 /* =========================================
    LIGHT MODE - BUG POPUP
 ========================================= */
@@ -1822,7 +1831,6 @@ html[data-theme="light"] .dashboard .bug-report-popup-close:hover {
   color: #171717;
 }
 
-
 /* =========================================
    RESPONSIVE
 ========================================= */
@@ -1846,6 +1854,13 @@ html[data-theme="light"] .dashboard .bug-report-popup-close:hover {
     width: 100%;
 
     margin-left: 0;
+  }
+
+  /* Move the background layer with the
+     full-width mobile dashboard */
+
+  .dashboard-main::before {
+    left: 0;
   }
 
   .mobile-menu {

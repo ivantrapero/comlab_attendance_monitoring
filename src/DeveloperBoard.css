@@ -44,6 +44,27 @@ html[data-theme="light"] .developer-board-page {
 
   overflow-x: hidden;
   overflow-y: auto;
+
+  box-sizing: border-box;
+
+  transition:
+    width 0.25s ease,
+    margin-left 0.25s ease;
+}
+
+/* =========================================
+   COLLAPSED SIDEBAR
+========================================= */
+
+/*
+   Your expanded sidebar = 280px
+   Your collapsed sidebar = 78px
+*/
+
+body:has(.app-sidebar.sidebar-collapsed)
+  .developer-board-main {
+  width: calc(100% - 78px);
+  margin-left: 78px;
 }
 
 /* =========================================
@@ -51,7 +72,10 @@ html[data-theme="light"] .developer-board-page {
 ========================================= */
 
 .developer-board-content {
+  width: 100%;
+
   padding: 32px 35px 50px;
+
   box-sizing: border-box;
 }
 
@@ -67,9 +91,12 @@ html[data-theme="light"] .developer-board-page {
   gap: 20px;
 
   margin-bottom: 24px;
+
   padding: 20px;
 
-  border: 1px solid rgba(245, 158, 11, 0.12);
+  border: 1px solid
+    rgba(245, 158, 11, 0.12);
+
   border-radius: 16px;
 
   background:
@@ -78,6 +105,8 @@ html[data-theme="light"] .developer-board-page {
       rgba(18, 18, 18, 0.88),
       rgba(12, 12, 12, 0.8)
     );
+
+  box-sizing: border-box;
 }
 
 html[data-theme="light"] .developer-board-header {
@@ -88,10 +117,12 @@ html[data-theme="light"] .developer-board-header {
       #fffaf0
     );
 
-  border-color: rgba(217, 119, 6, 0.18);
+  border-color:
+    rgba(217, 119, 6, 0.18);
 
   box-shadow:
-    0 18px 40px rgba(120, 72, 10, 0.07);
+    0 18px 40px
+      rgba(120, 72, 10, 0.07);
 }
 
 .section-kicker {
@@ -103,6 +134,7 @@ html[data-theme="light"] .developer-board-header {
   font-weight: 700;
 
   letter-spacing: 0.18em;
+
   text-transform: uppercase;
 }
 
@@ -111,11 +143,12 @@ html[data-theme="light"] .developer-board-header {
 
   color: #ffffff;
 
-  font-size: clamp(
-    1.6rem,
-    2.5vw,
-    2.2rem
-  );
+  font-size:
+    clamp(
+      1.6rem,
+      2.5vw,
+      2.2rem
+    );
 
   line-height: 1.2;
 }
@@ -159,6 +192,8 @@ html[data-theme="light"]
 }
 
 .summary-card {
+  min-width: 0;
+
   display: flex;
   align-items: center;
 
@@ -181,6 +216,8 @@ html[data-theme="light"]
   transition:
     transform 0.2s ease,
     border-color 0.2s ease;
+
+  box-sizing: border-box;
 }
 
 .summary-card:hover {
@@ -282,6 +319,7 @@ html[data-theme="light"]
   font-weight: 700;
 
   text-transform: uppercase;
+
   letter-spacing: 0.08em;
 }
 
@@ -310,6 +348,9 @@ html[data-theme="light"]
 ========================================= */
 
 .developer-board-panel {
+  width: 100%;
+  min-width: 0;
+
   padding: 22px;
 
   border: 1px solid
@@ -323,6 +364,8 @@ html[data-theme="light"]
       rgba(18, 18, 18, 0.9),
       rgba(12, 12, 12, 0.8)
     );
+
+  box-sizing: border-box;
 }
 
 html[data-theme="light"]
@@ -353,6 +396,7 @@ html[data-theme="light"]
   gap: 9px;
 
   margin-bottom: 16px;
+
   padding: 10px 12px;
 
   border-radius: 10px;
@@ -367,6 +411,8 @@ html[data-theme="light"]
 
   font-size: 10px;
   font-weight: 700;
+
+  box-sizing: border-box;
 }
 
 .banner-symbol {
@@ -405,6 +451,7 @@ html[data-theme="light"]
   gap: 8px;
 
   margin-bottom: 18px;
+
   padding: 11px 13px;
 
   border: 1px solid
@@ -419,6 +466,8 @@ html[data-theme="light"]
 
   font-size: 10px;
   font-weight: 600;
+
+  box-sizing: border-box;
 }
 
 .error-symbol {
@@ -428,6 +477,8 @@ html[data-theme="light"]
   display: flex;
   align-items: center;
   justify-content: center;
+
+  flex-shrink: 0;
 
   border-radius: 50%;
 
@@ -535,9 +586,13 @@ html[data-theme="light"]
   flex-direction: column;
 
   gap: 12px;
+
+  min-width: 0;
 }
 
 .note-item {
+  min-width: 0;
+
   padding: 16px 18px;
 
   border-radius: 12px;
@@ -551,6 +606,8 @@ html[data-theme="light"]
   transition:
     border-color 0.2s ease,
     background 0.2s ease;
+
+  box-sizing: border-box;
 }
 
 .note-item:hover {
@@ -604,6 +661,8 @@ html[data-theme="light"]
 }
 
 .note-meta-left {
+  min-width: 0;
+
   display: flex;
   align-items: center;
 
@@ -625,6 +684,7 @@ html[data-theme="light"]
   font-weight: 800;
 
   letter-spacing: 0.08em;
+
   text-transform: uppercase;
 }
 
@@ -706,6 +766,7 @@ html[data-theme="light"]
 
 .mark-done-button:disabled {
   opacity: 0.5;
+
   cursor: not-allowed;
 }
 
@@ -746,6 +807,7 @@ html[data-theme="light"]
   line-height: 1.7;
 
   white-space: pre-wrap;
+
   word-break: break-word;
 }
 
@@ -805,6 +867,7 @@ html[data-theme="light"]
   gap: 8px;
 
   margin-top: 13px;
+
   padding: 9px 11px;
 
   border: 1px solid
@@ -895,6 +958,8 @@ html[data-theme="light"]
   padding: 30px;
 
   text-align: center;
+
+  box-sizing: border-box;
 }
 
 .access-denied-symbol {
@@ -952,7 +1017,7 @@ html[data-theme="light"]
 }
 
 /* =========================================
-   RESPONSIVE
+   RESPONSIVE - TABLET
 ========================================= */
 
 @media (max-width: 1100px) {
@@ -963,22 +1028,46 @@ html[data-theme="light"]
         minmax(0, 1fr)
       );
   }
+
+  .developer-board-content {
+    padding:
+      28px 25px 45px;
+  }
 }
+
+/* =========================================
+   RESPONSIVE - SIDEBAR / MOBILE
+========================================= */
 
 @media (max-width: 850px) {
   .developer-board-main {
     width: 100%;
+
+    margin-left: 0;
+  }
+
+  body:has(.app-sidebar.sidebar-collapsed)
+    .developer-board-main {
+    width: 100%;
+
     margin-left: 0;
   }
 
   .developer-board-content {
-    padding: 24px 18px 40px;
+    padding:
+      24px 18px 40px;
   }
 
   .developer-board-header {
     align-items: flex-start;
+
+    gap: 15px;
   }
 }
+
+/* =========================================
+   RESPONSIVE - SMALL TABLET
+========================================= */
 
 @media (max-width: 650px) {
   .developer-summary-grid {
@@ -1003,35 +1092,55 @@ html[data-theme="light"]
 
   .note-footer {
     align-items: flex-start;
+
     flex-direction: column;
   }
 
   .completed-message {
     align-items: flex-start;
+
     flex-wrap: wrap;
   }
 
   .completed-message small {
     width: 100%;
+
     margin-left: 20px;
   }
 }
+
+/* =========================================
+   RESPONSIVE - MOBILE
+========================================= */
 
 @media (max-width: 480px) {
   .developer-summary-grid {
     grid-template-columns: 1fr;
   }
 
+  .developer-board-content {
+    padding:
+      20px 14px 35px;
+  }
+
   .developer-board-header {
     padding: 16px;
+
+    flex-direction: column;
   }
 
   .developer-board-header h2 {
     font-size: 1.45rem;
   }
 
+  .developer-board-header > div {
+    width: 100%;
+  }
+
   .developer-view-banner {
     align-items: flex-start;
+
+    flex-wrap: wrap;
   }
 
   .note-item {
@@ -1040,6 +1149,8 @@ html[data-theme="light"]
 
   .note-meta {
     flex-direction: column;
+
+    align-items: stretch;
   }
 
   .note-meta-left {
@@ -1048,5 +1159,36 @@ html[data-theme="light"]
 
   .mark-done-button {
     width: 100%;
+  }
+}
+
+/* =========================================
+   VERY SMALL MOBILE
+========================================= */
+
+@media (max-width: 360px) {
+  .developer-board-content {
+    padding:
+      18px 10px 30px;
+  }
+
+  .developer-board-panel {
+    padding: 12px;
+  }
+
+  .developer-board-header {
+    padding: 14px;
+  }
+
+  .developer-board-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .summary-card {
+    padding: 13px;
+  }
+
+  .note-item {
+    padding: 12px;
   }
 }
