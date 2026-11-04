@@ -42,6 +42,9 @@ function Dashboard({
   const [attendance, setAttendance] =
     useState([]);
 
+  const [schedules, setSchedules] =
+    useState([]);
+
   const [search, setSearch] =
     useState("");
 
@@ -133,6 +136,26 @@ function Dashboard({
           );
         },
       );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "schedules"),
+      (snapshot) => {
+        setSchedules(
+          snapshot.docs.map((item) => ({
+            id: item.id,
+            ...item.data(),
+          })),
+        );
+      },
+      (error) => {
+        console.error("Error loading scheduled classes:", error);
+        setSchedules([]);
+      },
+    );
 
     return () => unsubscribe();
   }, []);
@@ -241,7 +264,7 @@ function Dashboard({
   ========================================= */
 
   const today =
-    new Date().toLocaleDateString(
+    currentTime.toLocaleDateString(
       "en-US",
       {
         month: "long",
@@ -358,12 +381,74 @@ function Dashboard({
       60 +
     currentTime.getMinutes();
 
+  const scheduleReminders = schedules
+    .filter((schedule) =>
+      Number(schedule.dayOfWeek) === currentTime.getDay(),
+    )
+    .map((schedule) => {
+      const startMinutes = parseTimeValue(schedule.startTime);
+      const endMinutes = parseTimeValue(schedule.endTime);
+
+      if (startMinutes === null || endMinutes === null) {
+        return null;
+      }
+
+      const matchingRecord = todayRecords.find((record) =>
+        String(record.instructor || "").toLowerCase() ===
+          String(schedule.instructor || "").toLowerCase() &&
+        String(record.subject || "").toLowerCase() ===
+          String(schedule.subject || "").toLowerCase() &&
+        parseTimeValue(record.startTime) === startMinutes,
+      );
+
+      if (
+        matchingRecord?.status === "Absent" ||
+        matchingRecord?.timeIn ||
+        matchingRecord?.status === "Present" ||
+        matchingRecord?.status === "Late"
+      ) {
+        return null;
+      }
+
+      if (
+        startMinutes > currentMinutes &&
+        startMinutes <= currentMinutes + 15
+      ) {
+        return {
+          id: `${schedule.id}-upcoming`,
+          type: "warning",
+          title: "Class starting soon",
+          message: `${schedule.instructor} (${schedule.subject}) starts at ${schedule.startTime}.`,
+          time: schedule.startTime,
+        };
+      }
+
+      if (
+        currentMinutes >= startMinutes &&
+        currentMinutes < 24 * 60
+      ) {
+        return {
+          id: `${schedule.id}-missing`,
+          type: "timeout",
+          title: currentMinutes < endMinutes
+            ? "Check-in overdue"
+            : "Attendance not recorded",
+          message: `${schedule.instructor} (${schedule.subject}) was scheduled at ${schedule.startTime}, but no attendance was recorded.`,
+          time: schedule.startTime,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
   /* =========================================
      LIVE NOTIFICATIONS
   ========================================= */
 
-  const liveNotifications =
-    attendance
+  const liveNotifications = [
+    ...scheduleReminders,
+    ...attendance
       .filter(
         (record) =>
           record.status ===
@@ -417,7 +502,7 @@ function Dashboard({
         return null;
       })
       .filter(Boolean)
-      .slice(0, 4);
+  ].slice(0, 5);
 
   const notificationCount =
     liveNotifications.length;
@@ -687,7 +772,7 @@ function Dashboard({
 
             <div>
               <span className="drawer-label">
-                System changes
+                Live reminders
               </span>
 
               <strong>
@@ -885,6 +970,38 @@ function Dashboard({
 
           </section>
 
+          {scheduleReminders.length > 0 && (
+            <section className="schedule-reminders-panel" aria-live="polite">
+              <div className="schedule-reminders-heading">
+                <div>
+                  <span>CLASS REMINDERS</span>
+                  <h3>Schedule needs attention</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate("calendar")}
+                >
+                  Open Calendar
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+              <div className="schedule-reminders-list">
+                {scheduleReminders.map((reminder) => (
+                  <article
+                    className={`schedule-reminder ${reminder.type}`}
+                    key={reminder.id}
+                  >
+                    <CalendarDays size={16} />
+                    <div>
+                      <strong>{reminder.title}</strong>
+                      <p>{reminder.message}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* =================================
               STATISTICS
           ================================= */}
@@ -1062,7 +1179,7 @@ function Dashboard({
                 className="quick-card"
                 onClick={() =>
                   navigate(
-                    "attendance",
+                    "calendar",
                   )
                 }
               >
@@ -1076,12 +1193,12 @@ function Dashboard({
                 <div>
 
                   <strong>
-                    Attendance Records
+                    Schedule Calendar
                   </strong>
 
                   <span>
-                    View previous
-                    attendance
+                    Browse classes by
+                    day and week
                   </span>
 
                 </div>

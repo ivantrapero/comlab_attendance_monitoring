@@ -848,6 +848,88 @@
   font-size: 12px;
 }
 
+.schedule-reminders-panel {
+  margin-bottom: 24px;
+  padding: 18px 20px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 15px;
+  background: rgba(245, 158, 11, 0.045);
+}
+
+.schedule-reminders-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.schedule-reminders-heading span {
+  color: #fbbf24;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.schedule-reminders-heading h3 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.schedule-reminders-heading button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: #fbbf24;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.schedule-reminders-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 9px;
+}
+
+.schedule-reminder {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid rgba(251, 191, 36, 0.16);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.16);
+  color: #fbbf24;
+}
+
+.schedule-reminder.timeout {
+  border-color: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+}
+
+.schedule-reminder > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.schedule-reminder strong {
+  display: block;
+  color: #eeeeee;
+  font-size: 10px;
+}
+
+.schedule-reminder p {
+  margin: 4px 0 0;
+  color: #aaaaaa;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
 /* =========================================
    STATISTICS
 ========================================= */
@@ -1481,6 +1563,24 @@ html[data-theme="light"] .dashboard .welcome-section p {
   color: #666666;
 }
 
+html[data-theme="light"] .dashboard .schedule-reminders-panel {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+html[data-theme="light"] .dashboard .schedule-reminders-heading h3,
+html[data-theme="light"] .dashboard .schedule-reminder strong {
+  color: #222222;
+}
+
+html[data-theme="light"] .dashboard .schedule-reminder {
+  background: #ffffff;
+}
+
+html[data-theme="light"] .dashboard .schedule-reminder p {
+  color: #555555;
+}
+
 /* =========================================
    LIGHT MODE - REALTIME CLOCK
 ========================================= */
@@ -1912,7 +2012,11 @@ html[data-theme="light"] .dashboard .bug-report-popup-close:hover {
 
   .welcome-section {
     align-items: flex-start;
+    flex-direction: column;
+  }
 
+  .schedule-reminders-heading {
+    align-items: flex-start;
     flex-direction: column;
 
     gap: 18px;

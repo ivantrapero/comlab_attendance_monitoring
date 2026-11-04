@@ -1,6 +1,8 @@
 import {
   LayoutDashboard,
   ClipboardCheck,
+  CalendarDays,
+  Users,
   FileText,
   Bell,
   Settings,
@@ -93,6 +95,16 @@ function Sidebar({
           icon: ClipboardCheck,
         },
         {
+          page: "calendar",
+          label: "Schedule Calendar",
+          icon: CalendarDays,
+        },
+        {
+          page: "instructors",
+          label: "Instructors",
+          icon: Users,
+        },
+        {
           page: "reports",
           label: "Reports",
           icon: FileText,
@@ -123,6 +135,16 @@ function Sidebar({
           page: "attendance",
           label: "Attendance",
           icon: ClipboardCheck,
+        },
+        {
+          page: "calendar",
+          label: "Schedule Calendar",
+          icon: CalendarDays,
+        },
+        {
+          page: "instructors",
+          label: "Instructors",
+          icon: Users,
         },
         {
           page: "reports",

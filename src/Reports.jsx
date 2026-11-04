@@ -128,30 +128,36 @@ function Reports({ user, onLogout, onNavigate }) {
 
       let matchesDate = true;
 
-      if (dateFrom && recordDate) {
+      if (dateFrom) {
         const fromDate = new Date(
           `${dateFrom}T00:00:00`
         );
 
-        matchesDate = recordDate >= fromDate;
+        matchesDate =
+          matchesDate &&
+          recordDate !== null &&
+          recordDate >= fromDate;
       }
 
-      if (dateTo && recordDate) {
+      if (dateTo) {
         const toDate = new Date(
           `${dateTo}T23:59:59`
         );
 
         matchesDate =
-          matchesDate && recordDate <= toDate;
+          matchesDate &&
+          recordDate !== null &&
+          recordDate <= toDate;
       }
 
-      if (selectedMonth && recordDate) {
+      if (selectedMonth) {
         const [year, month] = selectedMonth
           .split("-")
           .map(Number);
 
         matchesDate =
           matchesDate &&
+          recordDate !== null &&
           recordDate.getFullYear() === year &&
           recordDate.getMonth() === month - 1;
       }
@@ -246,6 +252,10 @@ function Reports({ user, onLogout, onNavigate }) {
         "Instructor Name":
           record.instructor || "",
         Subject: record.subject || "",
+        Schedule:
+          record.startTime && record.endTime
+            ? `${record.startTime} - ${record.endTime}`
+            : "",
         "Time In": record.timeIn || "",
         "Time Out": record.timeOut || "",
         "Reason / Remarks":
@@ -263,6 +273,7 @@ function Reports({ user, onLogout, onNavigate }) {
       { wch: 14 },
       { wch: 25 },
       { wch: 22 },
+      { wch: 25 },
       { wch: 12 },
       { wch: 12 },
       { wch: 22 },
@@ -324,6 +335,9 @@ function Reports({ user, onLogout, onNavigate }) {
         formatDate(record),
         record.instructor || "",
         record.subject || "",
+        record.startTime && record.endTime
+          ? `${record.startTime} - ${record.endTime}`
+          : "",
         record.timeIn || "",
         record.timeOut || "",
         record.status || "",
@@ -337,6 +351,7 @@ function Reports({ user, onLogout, onNavigate }) {
           "Date",
           "Instructor",
           "Subject",
+          "Schedule",
           "Time In",
           "Time Out",
           "Status",
@@ -762,6 +777,90 @@ function Reports({ user, onLogout, onNavigate }) {
 
             </div>
 
+          </section>
+
+          <section className="report-table-card">
+            <div className="report-table-header">
+              <div>
+                <h3>Attendance Records</h3>
+                <p>
+                  {selectedMonth
+                    ? `Records for ${reportMonthLabel}`
+                    : "Records for all months"}
+                </p>
+              </div>
+
+              <span>
+                {totalRecords} record
+                {totalRecords === 1 ? "" : "s"}
+              </span>
+            </div>
+
+            <div className="report-table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Instructor</th>
+                    <th>Subject</th>
+                    <th>Schedule</th>
+                    <th>Time In</th>
+                    <th>Time Out</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>Recorded By</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="9" className="empty-report">
+                        Loading attendance records...
+                      </td>
+                    </tr>
+                  ) : filteredRecords.length > 0 ? (
+                    filteredRecords.map((record) => (
+                      <tr key={record.id}>
+                        <td>{formatDate(record)}</td>
+                        <td>
+                          <strong>{record.instructor || "—"}</strong>
+                        </td>
+                        <td>{record.subject || "—"}</td>
+                        <td>
+                          {record.startTime && record.endTime
+                            ? `${record.startTime} - ${record.endTime}`
+                            : "—"}
+                        </td>
+                        <td>{record.timeIn || "—"}</td>
+                        <td>{record.timeOut || "—"}</td>
+                        <td>
+                          <span
+                            className={`report-status ${
+                              record.status === "Late"
+                                ? "late"
+                                : record.status === "Absent"
+                                  ? "absent"
+                                  : "completed"
+                            }`}
+                          >
+                            {record.status || "—"}
+                          </span>
+                        </td>
+                        <td>{record.reason || "—"}</td>
+                        <td>{record.recordedBy || "—"}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="9" className="empty-report">
+                        No attendance records found for this selection.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* EXPORT INFO */}

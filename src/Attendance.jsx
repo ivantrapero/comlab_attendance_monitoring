@@ -1130,66 +1130,66 @@ function Attendance({ user, onNavigate, onLogout }) {
 
         return;
       }
+    }
 
-      if (
-        !form.startHour ||
-        !form.startMinute ||
-        !form.startPeriod
-      ) {
-        alert(
-          "Please enter the subject start time."
-        );
+    if (
+      !form.startHour ||
+      !form.startMinute ||
+      !form.startPeriod
+    ) {
+      alert(
+        "Please enter the subject start time."
+      );
 
-        return;
-      }
+      return;
+    }
 
-      if (
-        !form.endHour ||
-        !form.endMinute ||
-        !form.endPeriod
-      ) {
-        alert(
-          "Please enter the subject end time."
-        );
+    if (
+      !form.endHour ||
+      !form.endMinute ||
+      !form.endPeriod
+    ) {
+      alert(
+        "Please enter the subject end time."
+      );
 
-        return;
-      }
+      return;
+    }
 
-      const startMinutes =
-        convertToMinutes(
-          form.startHour,
-          form.startMinute,
-          form.startPeriod
-        );
+    const startMinutes =
+      convertToMinutes(
+        form.startHour,
+        form.startMinute,
+        form.startPeriod
+      );
 
-      const endMinutes =
-        convertToMinutes(
-          form.endHour,
-          form.endMinute,
-          form.endPeriod
-        );
+    const endMinutes =
+      convertToMinutes(
+        form.endHour,
+        form.endMinute,
+        form.endPeriod
+      );
 
-      if (
-        startMinutes === null ||
-        endMinutes === null
-      ) {
-        alert(
-          "Please enter a valid schedule."
-        );
+    if (
+      startMinutes === null ||
+      endMinutes === null
+    ) {
+      alert(
+        "Please enter a valid schedule."
+      );
 
-        return;
-      }
+      return;
+    }
 
-      if (
-        startMinutes ===
-        endMinutes
-      ) {
-        alert(
-          "Class start and end time cannot be the same."
-        );
+    if (
+      startMinutes ===
+      endMinutes
+    ) {
+      alert(
+        "Class start and end time cannot be the same."
+      );
 
-        return;
-      }
+      return;
     }
 
     if (
@@ -1224,22 +1224,18 @@ function Attendance({ user, onNavigate, onLogout }) {
           : "";
 
       const startTimeValue =
-        form.status === "Present"
-          ? formatTime(
-              form.startHour,
-              form.startMinute,
-              form.startPeriod
-            )
-          : "";
+        formatTime(
+          form.startHour,
+          form.startMinute,
+          form.startPeriod
+        );
 
       const endTimeValue =
-        form.status === "Present"
-          ? formatTime(
-              form.endHour,
-              form.endMinute,
-              form.endPeriod
-            )
-          : "";
+        formatTime(
+          form.endHour,
+          form.endMinute,
+          form.endPeriod
+        );
 
       const computedStatus =
         calculateAttendanceStatus({
@@ -1282,6 +1278,7 @@ function Attendance({ user, onNavigate, onLogout }) {
           form.recordedBy.trim(),
 
         date:
+          editingRecord?.date ||
           todayDate,
 
         createdAt:
@@ -2510,6 +2507,10 @@ function Attendance({ user, onNavigate, onLogout }) {
                     </th>
 
                     <th>
+                      Date
+                    </th>
+
+                    <th>
                       Subject
                     </th>
 
@@ -2569,6 +2570,11 @@ function Attendance({ user, onNavigate, onLogout }) {
                                 }
                               </strong>
                             </div>
+                          </td>
+
+                          <td>
+                            {record.date ||
+                              "—"}
                           </td>
 
                           <td>
@@ -2678,7 +2684,7 @@ function Attendance({ user, onNavigate, onLogout }) {
                   ) : (
                     <tr>
                       <td
-                        colSpan="9"
+                        colSpan="10"
                         className="no-records"
                       >
                         No attendance
@@ -2903,12 +2909,19 @@ function Attendance({ user, onNavigate, onLogout }) {
                 </div>
               </div>
 
-              {/* PRESENT */}
+              <div className="form-group">
+                <label>
+                  Attendance Date
+                </label>
 
-              {form.status ===
-                "Present" && (
-                <>
-                  <div className="schedule-section">
+                <input
+                  type="text"
+                  value={displayDate}
+                  readOnly
+                />
+              </div>
+
+              <div className="schedule-section">
                     <div className="schedule-title">
                       <Clock3
                         size={15}
@@ -3115,8 +3128,11 @@ function Attendance({ user, onNavigate, onLogout }) {
                     </div>
                   </div>
 
-                  {/* TIME IN */}
+              {/* PRESENT */}
 
+              {form.status ===
+                "Present" && (
+                <>
                   <div className="time-section">
                     <div className="time-group">
                       <label>

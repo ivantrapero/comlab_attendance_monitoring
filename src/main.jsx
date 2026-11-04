@@ -10,6 +10,8 @@ import App from "./App.jsx";
 import Dashboard from "./Dashboard.jsx";
 import Attendance from "./Attendance.jsx";
 import Reports from "./Reports.jsx";
+import ScheduleCalendar from "./ScheduleCalendar.jsx";
+import InstructorDirectory from "./InstructorDirectory.jsx";
 import Notifications from "./Notifications.jsx";
 import Settings from "./Settings.jsx";
 import DeveloperBoard from "./DeveloperBoard.jsx";
@@ -42,6 +44,8 @@ document.documentElement.dataset.theme =
 const developerPages = [
   "dashboard",
   "attendance",
+  "calendar",
+  "instructors",
   "reports",
   "notifications",
   "developer-board",
@@ -51,6 +55,8 @@ const developerPages = [
 const administratorPages = [
   "dashboard",
   "attendance",
+  "calendar",
+  "instructors",
   "reports",
   "notifications",
   "report-bug",
@@ -60,6 +66,8 @@ const administratorPages = [
 const workingPages = [
   "dashboard",
   "attendance",
+  "calendar",
+  "instructors",
   "reports",
   "settings",
 ];
@@ -293,6 +301,24 @@ function Main() {
           onLogout={
             handleLogout
           }
+        />
+      );
+
+    case "calendar":
+      return (
+        <ScheduleCalendar
+          user={user}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+        />
+      );
+
+    case "instructors":
+      return (
+        <InstructorDirectory
+          user={user}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
         />
       );
 

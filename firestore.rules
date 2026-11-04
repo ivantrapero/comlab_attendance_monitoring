@@ -45,6 +45,13 @@ service cloud.firestore {
     }
 
     /*
+     * RECURRING CLASS SCHEDULES
+     */
+    match /schedules/{scheduleId} {
+      allow read, write: if isVerifiedUser();
+    }
+
+    /*
      * NOTIFICATIONS
      */
     match /notifications/{notificationId} {
